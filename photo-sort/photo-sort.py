@@ -22,6 +22,9 @@ __license__ = "MIT"
 __email__ = "marcus@gotling.se"
 
 import os
+import errno
+import shutil
+from glob import glob
 from docopt import docopt
 
 def folder_name(arguments, serial=None):
@@ -33,7 +36,7 @@ def folder_name(arguments, serial=None):
 
     return output_folder_name
 
-def folder(arguments):
+def folder_path(arguments):
     output_folder_name = folder_name(arguments)
     output_folder = os.path.abspath(arguments['<output>']) + '/' + output_folder_name
 
@@ -45,10 +48,46 @@ def folder(arguments):
 
     return output_folder
 
-def process(arguments):
-    output_folder = folder(arguments)
+def mkdir(output_folder):
+    try:
+        os.makedirs(output_folder)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
 
+def get_index_mask(file_count):
+    if file_count < 10:
+        return '%d'
+    elif file_count < 100:
+        return '%02d'
+    elif file_count < 1000:
+        return '%03d'
+    else:
+        return '%04d' 
+
+def copy_files(arguments, output_folder):
+    files = glob(arguments['<input>'] + '/' + '*.*')
+    file_count = len(files)
+    index_mask = get_index_mask(file_count)
+
+    for index, input_file in enumerate(files):
+        #  <löpnummer> - <händelse> <år> - <fotograf>.<ext>
+        file_name_format = index_mask + ' - %s %s'
+        output_file_name = file_name_format % (index + 1, arguments['<event>'], arguments['<year>'])
+        if arguments['<photographer>']:
+            output_file_name += ' - ' + arguments['<photographer>']
+        extension = os.path.splitext(input_file)[1]
+        output_file_name += extension.lower()
+
+        output_file = output_folder + '/' + output_file_name
+        print output_file
+        shutil.copy2(input_file, output_file)
+
+def process(arguments):
+    output_folder = folder_path(arguments)
     print output_folder
+    mkdir(output_folder)
+    copy_files(arguments, output_folder)
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 0.1')
