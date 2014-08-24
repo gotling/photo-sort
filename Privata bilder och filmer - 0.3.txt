@@ -1,0 +1,187 @@
+Privata bilder och filmer
+
+Version
+-------
+0.1 - 2010-01-03 - MaGo - Första version
+0.2 - 2011-10-01 - MaGo - Ändrat katalognamn till att innehålla år istället
+                          för datum. La till kategorier.
+0.3 - 2014-08-22 - MaGo - Ändrat encoding till UTF-8.
+                          Lagt till år i filnamn.
+
+
+Övergripande
+------------
+Beskriver gemensam hantering av privata bilder och filmer.
+
+
+Innehållsförteckning
+-------------------
+* Katalogstruktur 
+* Namngivning
+* Sortering
+* Rotering
+* Komprimering
+
+
+Katalogstruktur
+---------------
+Följande kategorier används
+
+ Blandat
+ -------
+ Enstaka bilder som kan vara intressanta men inte passar in i någon särskild
+ kategori.
+
+ Familj
+ ------
+ Bilder tagna med famijlen.
+ 
+ LAN
+ ---
+ Bilder från LAN.
+ 
+ Lappar
+ ------
+ Bilder på lappar och annan text, t.ex. brev från arg granne.
+
+ Fester
+ ------
+ Olika former av fester t.ex. Hemmafest hos John Doe, Rave i Bromma, 
+ Utgång till 6:e Tunnan m.m.
+
+ Händelser
+ ---------
+ Händelser som ej specifkt involverar fester t.ex. Träff på djurgården, 
+ Grillning i tantolunden m.m.
+
+ Mat
+ ---
+ Mat i görning och efteråt t.ex. Sjukt goda hamburgare, Pankakstårta m.m.
+
+ Natur
+ -----
+ Bilder från naturen t.ex. Vårdag i Stockholm, Kall vintermorgon m.m. 
+
+ Personer
+ --------
+ Bilder på enstaka personer.
+
+ Platser
+ -------
+ Bilder som kretsar runt olika platser, t.ex. Lägenheten, Landstället.
+
+ Projekt
+ -------
+ Bilder på t.ex. aktioner eller manipulerade bilder.
+
+ Prylar
+ ------
+ Bilder på saker utan koppling till särskild händelse t.ex. Ny speldator, 
+ Renovering av soffa m.m.
+
+ Resor
+ -----
+ Resor inom och utom landet t.ex. Resa till landställe, Europaresa, 
+ Jönköping m.m.
+
+ Självporträtt
+ -------------
+ Bilder på sig själv.
+ 
+ Skola
+ -----
+ Bilder från skolgång, inklusive arbte och fester.
+ 
+ Teknade
+ -------
+ Bilder som är tecknade i fotograferad eller digital form.
+
+Namngivning
+-----------
+
+ Katalognamn
+ -----------
+ <år> - <händelse>[ - <fotograf>]
+
+ Exempel:
+ 2009 - Nyårsafton 2009
+ 2009 - Nyårsafton 2009 - Marcus
+
+  Konflikter
+  ------------
+  Om det redan skulle existera en mapp med namnet enligt ovan innehållande
+  bilder som är tagna vid ett annat tillfälle, läggs ett löpnummer till i
+  namnet. Detta löpnummer skall börja på 2 och den redan existerande katalogen
+  skall behållas oförändrad..
+
+  <år> - <händelse> - <löpnummer> [ - <fotograf>]
+
+  Exempel:
+  2009 - Fesival - 2 - Marcus
+
+ Filnamn
+ -------
+ <löpnummer> - <händelse> <år> - <fotograf>.<ext>
+
+ Exempel:
+ 015 - Nyårsafton 2009 - Marcus.jpg 
+
+  Programvara för byte av filnamn
+  -------------------------------
+  RegexRenamer (http://regexrenamer.sourceforge.net)
+
+   Steg 1
+   ------
+   MatcH: .*\.(.*)
+   Replace: $# - <händelse> <year> - <fotograf>.$1
+
+   Steg 2
+   ------
+   Behöver endast utföras om inte alla filändelser är med små bokstäver.
+
+   Match: \.(.*)$
+   Replace: .$1
+   Change Case: Lowercase
+
+
+Sortering
+---------
+Bilder och filmer sorteras tillsammans för att ge ett korrekt tidsflöde.
+Sorteras efter tid då bilden togs.
+
+
+Rotering
+--------
+Alla bilder skall vara roterade med jorden neråt i de fall ingen speciell
+artistisk effekt önskas förmedlas.
+
+
+Komprimering
+------------
+
+ Bilder
+ ------
+ Bilder skall sparas i oförändrad upplösning och komprimering från kameran.
+ Används RAW-format måste också kopior finnas tillgängliga i JPEG-format med
+ kvalitetsgrad satt till minst 90%. 
+
+ Filmer
+ ------
+ De flesta kameror sparar filmer med väldigt låg komprimering vilket resulterar
+ i stora filer. De använder också många gånger olika format.
+ Därför skall alla filmer komprimeras om.
+
+ Container: MP4
+ Extension: mp4/m4v
+ Video: H264
+ Audio: AAC
+
+  Programvara för komprimering
+  ----------------------------
+  HandBrake (http://handbrake.fr)
+
+  Använd preset: Regular > High Profile
+
+  Codecpack för uppspelning
+  -------------------------
+  CCCP (http://www.cccp-project.net/)
