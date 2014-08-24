@@ -11,7 +11,7 @@ Command line
 	    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [--dont-encode]
 
 	Options:
-	    -i --input ...    Folder with photos to process
+	    -i --input ...     Folder(s) with photos to process
 	    -o --output        Where to create new folder
 	    -y --year          Year the photos were taken
 	    -e --event         Name of the event
