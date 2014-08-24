@@ -4,10 +4,10 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> -o <output> -y <year> -e <event> [-p <photographer>] [--dont-encode]
+    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [--dont-encode]
 
 Options:
-    -i --input         Folder with photos to process
+    -i --input ...    Folder with photos to process
     -o --output        Where to create new folder
     -y --year          Year the photos were taken
     -e --event         Name of the event
@@ -83,18 +83,18 @@ def get_output_file_name(arguments, index_mask, index, input_file):
 
     return output_file_name
 
-def copy_files(arguments, output_folder):
-    files = glob(arguments['<input>'] + '/' + '*.*')
-    file_count = len(files)
+def copy_files(arguments, input_files, output_folder):
+    file_count = len(input_files)
     index_mask = get_index_mask(file_count)
 
-    for index, input_file in enumerate(files):
+    for index, key in enumerate(sorted(input_files)):
+        input_file = input_files[key]
         output_file_name = get_output_file_name(arguments, index_mask, index, input_file)
         output_file = output_folder + '/' + output_file_name
         shutil.copy2(input_file, output_file)
         print output_file_name
 
-    print 'Copied %d files' % file_count
+    print 'Copied %d files.' % file_count
 
 def encode_videos(output_folder):
     files = glob(output_folder + '/*.*')
@@ -104,26 +104,46 @@ def encode_videos(output_folder):
 
         if extension in video_extensions:
             output_file = base + '.mp4'
+
             if os.path.exists(output_file):
                 shutil.move(input_file, input_file + '_')
                 input_file = input_file + '_'
-                print "Output video file alread exists, renaming"
             
             subprocess.call( ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file])
             os.remove(input_file)
 
+def get_input_files(directories):
+    input_files = {}
+
+    for directory in directories:
+        files = glob(directory + '/' + '*.*')
+
+        for file in files:
+            create_time = os.path.getctime(file)
+
+            while create_time in input_files:
+                create_time += 1
+
+            input_files[create_time] = file
+
+    return input_files
+
 def process(arguments):
     output_folder = folder_path(arguments)
-    print "Output directory:", output_folder
     mkdir(output_folder)
-    copy_files(arguments, output_folder)
+    print "Output directory:", output_folder
+
+    input_files = get_input_files(arguments['--input'])
+    copy_files(arguments, input_files, output_folder)
+
     if not arguments['--dont-encode']:
         encode_videos(output_folder)
 
-    print "All done!"
+    print "\nAll done!"
 
 def main():
-    arguments = docopt(__doc__, version='Photo Sort 0.1')
+    arguments = docopt(__doc__, version='Photo Sort 1.0.0')
+    print arguments
 
     process(arguments)
 
