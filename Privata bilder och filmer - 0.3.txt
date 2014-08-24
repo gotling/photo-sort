@@ -7,6 +7,7 @@ Version
                           för datum. La till kategorier.
 0.3 - 2014-08-22 - MaGo - Ändrat encoding till UTF-8.
                           Lagt till år i filnamn.
+                          Ändrat HandBrake preset till Normal
 
 
 Övergripande
@@ -180,7 +181,7 @@ Komprimering
   ----------------------------
   HandBrake (http://handbrake.fr)
 
-  Använd preset: Regular > High Profile
+  Använd preset: Regular > Normal
 
   Codecpack för uppspelning
   -------------------------

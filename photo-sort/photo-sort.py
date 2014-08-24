@@ -4,7 +4,7 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> -o <output> -y <year> -e <event> [-p <photographer>]
+    photo-sort.py -i <input> -o <output> -y <year> -e <event> [-p <photographer>] [--dont-encode]
 
 Options:
     -i --input         Folder with photos to process
@@ -12,9 +12,13 @@ Options:
     -y --year          Year the photos were taken
     -e --event         Name of the event
     -p --photographer  Name of person taking the photos
+    --dont-encode      Do not encode videos
 
-Exapmle:
-    photo-sort.py -i DCIM100 -o "My Photos" -y 2014 -e Boom -p Marcus
+Example:
+    photo-sort.py -i "Boom photos" -o "My Photos" -y 2014 -e Boom -p Marcus
+
+More info:
+    Encoding of videos requires HandBrakeCLI to be on the system path
 """
 
 __author__ = "Marcus Götling"
@@ -24,8 +28,12 @@ __email__ = "marcus@gotling.se"
 import os
 import errno
 import shutil
+import subprocess
 from glob import glob
 from docopt import docopt
+
+video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
+handbrake_preset = 'Normal'
 
 def folder_name(arguments, serial=None):
     output_folder_name = '%s - %s' % (arguments['<year>'], arguments['<event>'])
@@ -88,11 +96,31 @@ def copy_files(arguments, output_folder):
 
     print 'Copied %d files' % file_count
 
+def encode_videos(output_folder):
+    files = glob(output_folder + '/*.*')
+
+    for input_file in files:
+        (base, extension)=os.path.splitext(input_file)
+
+        if extension in video_extensions:
+            output_file = base + '.mp4'
+            if os.path.exists(output_file):
+                shutil.move(input_file, input_file + '_')
+                input_file = input_file + '_'
+                print "Output video file alread exists, renaming"
+            
+            subprocess.call( ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file])
+            os.remove(input_file)
+
 def process(arguments):
     output_folder = folder_path(arguments)
     print "Output directory:", output_folder
     mkdir(output_folder)
     copy_files(arguments, output_folder)
+    if not arguments['--dont-encode']:
+        encode_videos(output_folder)
+
+    print "All done!"
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 0.1')
