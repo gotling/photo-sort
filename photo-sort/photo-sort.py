@@ -15,7 +15,7 @@ Options:
     --dont-encode      Do not encode videos
 
 Example:
-    photo-sort.py -i "Boom photos" -o "My Photos" -y 2014 -e Boom -p Marcus
+    photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
 
 More info:
     Encoding of videos requires HandBrakeCLI to be on the system path
