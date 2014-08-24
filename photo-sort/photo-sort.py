@@ -21,10 +21,34 @@ __author__ = "Marcus Götling"
 __license__ = "MIT"
 __email__ = "marcus@gotling.se"
 
+import os
 from docopt import docopt
 
+def folder_name(arguments, serial=None):
+    output_folder_name = '%s - %s' % (arguments['<year>'], arguments['<event>'])
+    if serial:
+        output_folder_name += ' - ' + str(serial)
+    if arguments['<photographer>']:
+        output_folder_name += ' - ' + arguments['<photographer>']
+
+    return output_folder_name
+
+def folder(arguments):
+    output_folder_name = folder_name(arguments)
+    output_folder = os.path.abspath(arguments['<output>']) + '/' + output_folder_name
+
+    serial = 1
+    while (os.path.isdir(output_folder)):
+        serial += 1
+        output_folder_name = folder_name(arguments, serial)
+        output_folder = os.path.abspath(arguments['<output>']) + '/' + output_folder_name
+
+    return output_folder
+
 def process(arguments):
-    print "Input valid"
+    output_folder = folder(arguments)
+
+    print output_folder
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 0.1')
