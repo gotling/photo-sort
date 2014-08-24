@@ -35,24 +35,27 @@ from docopt import docopt
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
 
-def folder_name(arguments, serial=None):
-    output_folder_name = '%s - %s' % (arguments['<year>'], arguments['<event>'])
+def folder_name(year, event, photographer, serial=None):
+    output_folder_name = '%s - %s' % (year, event)
+    
     if serial:
         output_folder_name += ' - ' + str(serial)
-    if arguments['<photographer>']:
-        output_folder_name += ' - ' + arguments['<photographer>']
+    
+    if photographer:
+        output_folder_name += ' - ' + photographer
 
     return output_folder_name
 
-def folder_path(arguments):
-    output_folder_name = folder_name(arguments)
-    output_folder = os.path.abspath(arguments['<output>']) + '/' + output_folder_name
+def folder_path(output, year, event, photographer):
+    output_folder_name = folder_name(year, event, photographer)
+    output_folder = os.path.abspath(output) + '/' + output_folder_name
 
     serial = 1
+
     while (os.path.isdir(output_folder)):
         serial += 1
-        output_folder_name = folder_name(arguments, serial)
-        output_folder = os.path.abspath(arguments['<output>']) + '/' + output_folder_name
+        output_folder_name = folder_name(year, event, photographer, serial)
+        output_folder = os.path.abspath(output) + '/' + output_folder_name
 
     return output_folder
 
@@ -73,23 +76,25 @@ def get_index_mask(file_count):
     else:
         return '%04d' 
 
-def get_output_file_name(arguments, index_mask, index, input_file):
+def get_output_file_name(year, event, photographer, index_mask, index, input_file):
     file_name_format = index_mask + ' - %s %s'
-    output_file_name = file_name_format % (index + 1, arguments['<event>'], arguments['<year>'])
-    if arguments['<photographer>']:
-        output_file_name += ' - ' + arguments['<photographer>']
+    output_file_name = file_name_format % (index + 1, event, year)
+    
+    if photographer:
+        output_file_name += ' - ' + photographer
+
     extension = os.path.splitext(input_file)[1]
     output_file_name += extension.lower()
 
     return output_file_name
 
-def copy_files(arguments, input_files, output_folder):
+def copy_files(year, event, photographer, input_files, output_folder):
     file_count = len(input_files)
     index_mask = get_index_mask(file_count)
 
     for index, key in enumerate(sorted(input_files)):
         input_file = input_files[key]
-        output_file_name = get_output_file_name(arguments, index_mask, index, input_file)
+        output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
         output_file = output_folder + '/' + output_file_name
         shutil.copy2(input_file, output_file)
         print output_file_name
@@ -129,12 +134,12 @@ def get_input_files(directories):
     return input_files
 
 def process(arguments):
-    output_folder = folder_path(arguments)
+    output_folder = folder_path(arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
     mkdir(output_folder)
     print "Output directory:", output_folder
 
     input_files = get_input_files(arguments['--input'])
-    copy_files(arguments, input_files, output_folder)
+    copy_files(arguments['<year>'], arguments['<event>'], arguments['<photographer>'], input_files, output_folder)
 
     if not arguments['--dont-encode']:
         encode_videos(output_folder)
