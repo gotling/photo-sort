@@ -65,27 +65,32 @@ def get_index_mask(file_count):
     else:
         return '%04d' 
 
+def get_output_file_name(arguments, index_mask, index, input_file):
+    file_name_format = index_mask + ' - %s %s'
+    output_file_name = file_name_format % (index + 1, arguments['<event>'], arguments['<year>'])
+    if arguments['<photographer>']:
+        output_file_name += ' - ' + arguments['<photographer>']
+    extension = os.path.splitext(input_file)[1]
+    output_file_name += extension.lower()
+
+    return output_file_name
+
 def copy_files(arguments, output_folder):
     files = glob(arguments['<input>'] + '/' + '*.*')
     file_count = len(files)
     index_mask = get_index_mask(file_count)
 
     for index, input_file in enumerate(files):
-        #  <löpnummer> - <händelse> <år> - <fotograf>.<ext>
-        file_name_format = index_mask + ' - %s %s'
-        output_file_name = file_name_format % (index + 1, arguments['<event>'], arguments['<year>'])
-        if arguments['<photographer>']:
-            output_file_name += ' - ' + arguments['<photographer>']
-        extension = os.path.splitext(input_file)[1]
-        output_file_name += extension.lower()
-
+        output_file_name = get_output_file_name(arguments, index_mask, index, input_file)
         output_file = output_folder + '/' + output_file_name
-        print output_file
         shutil.copy2(input_file, output_file)
+        print output_file_name
+
+    print 'Copied %d files' % file_count
 
 def process(arguments):
     output_folder = folder_path(arguments)
-    print output_folder
+    print "Output directory:", output_folder
     mkdir(output_folder)
     copy_files(arguments, output_folder)
 
