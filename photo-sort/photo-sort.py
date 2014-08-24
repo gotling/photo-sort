@@ -143,7 +143,6 @@ def process(arguments):
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
-    print arguments
 
     process(arguments)
 
