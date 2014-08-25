@@ -26,10 +26,17 @@ __license__ = "MIT"
 __email__ = "marcus@gotling.se"
 
 import os
+import re
+import time
 import errno
 import shutil
+import timeit
+import calendar
 import subprocess
 from glob import glob
+from datetime import datetime
+
+import exifread
 from docopt import docopt
 
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
@@ -117,6 +124,25 @@ def encode_videos(output_folder):
             subprocess.call( ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file])
             os.remove(input_file)
 
+def get_time_taken(file):
+    """Return date time when photo or video was most likely taken"""
+
+    f = open(file, 'rb')
+    tags = exifread.process_file(f, details=False, stop_tag='EXIF DateTimeOriginal')
+    
+    if 'EXIF DateTimeOriginal' in tags:
+        date_time = datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
+        return calendar.timegm(date_time.utctimetuple())
+
+    match=re.search(r'.+(\d{8}_\d{6}).+', file)
+    
+    if match:
+        date_time = datetime.strptime(match.group(1), '%Y%m%d_%H%M%S')
+        return calendar.timegm(date_time.utctimetuple())
+
+    os_modify_time = os.path.getmtime(file)
+    return os_modify_time
+
 def get_input_files(directories):
     input_files = {}
 
@@ -124,12 +150,12 @@ def get_input_files(directories):
         files = glob(directory + '/' + '*.*')
 
         for file in files:
-            create_time = os.path.getctime(file)
+            time_taken = get_time_taken(file)
 
-            while create_time in input_files:
-                create_time += 1
+            while time_taken in input_files:
+                time_taken += 1
 
-            input_files[create_time] = file
+            input_files[time_taken] = file
 
     return input_files
 
@@ -139,6 +165,7 @@ def process(arguments):
     print "Output directory:", output_folder
 
     input_files = get_input_files(arguments['--input'])
+
     copy_files(arguments['<year>'], arguments['<event>'], arguments['<photographer>'], input_files, output_folder)
 
     if not arguments['--dont-encode']:
