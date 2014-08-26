@@ -22,4 +22,6 @@ Command line
 	    photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
 
 	More info:
-	    Encoding of videos requires HandBrakeCLI to be on the system path
+	    Encoding of videos requires HandBrakeCLI and ExifTool to be on the system path.
+	    https://handbrake.fr/downloads2.php
+	    http://www.sno.phy.queensu.ca/~phil/exiftool/
