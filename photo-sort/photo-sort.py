@@ -4,7 +4,7 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [--dont-encode]
+    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [options]
 
 Options:
     -i --input ...     Folder(s) with photos to process
@@ -12,7 +12,7 @@ Options:
     -y --year          Year the photos were taken
     -e --event         Name of the event
     -p --photographer  Name of person taking the photos
-    --dont-encode      Do not encode videos
+    --skip-encode      Do not encode videos
 
 Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
@@ -38,6 +38,7 @@ from datetime import datetime
 
 import exifread
 from docopt import docopt
+import exiftool
 
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
@@ -108,21 +109,43 @@ def copy_files(year, event, photographer, input_files, output_folder):
 
     print 'Copied %d files.' % file_count
 
+def get_video_rotation(et, file):
+    """Return value HandBrake uses for rotation"""
+    
+    rotation = et.get_tag('Rotation', file)
+
+    if rotation == 90:
+        return 4
+    elif rotation == 180:
+        return 3
+    elif rotation == 270:
+        return 7
+    else:
+        return None
+
 def encode_videos(output_folder):
+    """Encode videos using HandBrakeCLI"""
     files = glob(output_folder + '/*.*')
 
-    for input_file in files:
-        (base, extension)=os.path.splitext(input_file)
+    with exiftool.ExifTool() as et:
+        for input_file in files:
+            (base, extension)=os.path.splitext(input_file)
 
-        if extension in video_extensions:
-            output_file = base + '.mp4'
+            if extension in video_extensions:
+                output_file = base + '.mp4'
 
-            if os.path.exists(output_file):
-                shutil.move(input_file, input_file + '_')
-                input_file = input_file + '_'
-            
-            subprocess.call( ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file])
-            os.remove(input_file)
+                if os.path.exists(output_file):
+                    shutil.move(input_file, input_file + '_')
+                    input_file = input_file + '_'
+
+                command = ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file]
+
+                rotation = get_video_rotation(et, input_file)
+                if rotation:
+                    command.append("--rotate=" + str(rotation))
+
+                subprocess.call(command)
+                os.remove(input_file)
 
 def get_time_taken(file):
     """Return date time when photo or video was most likely taken"""
@@ -144,6 +167,7 @@ def get_time_taken(file):
     return os_modify_time
 
 def get_input_files(directories):
+    """Get all files from multiple directories sorted by date"""
     input_files = {}
 
     for directory in directories:
@@ -165,10 +189,9 @@ def process(arguments):
     print "Output directory:", output_folder
 
     input_files = get_input_files(arguments['--input'])
-
     copy_files(arguments['<year>'], arguments['<event>'], arguments['<photographer>'], input_files, output_folder)
 
-    if not arguments['--dont-encode']:
+    if not arguments['--skip-encode']:
         encode_videos(output_folder)
 
     print "\nAll done!"
