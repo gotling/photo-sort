@@ -13,55 +13,81 @@ __email__ = "marcus@gotling.se"
 
 import sys
 from Tkinter import *
+import tkFileDialog
 
 from docopt import docopt
 
-import photo_sort
+from photo_sort import process
 
 class PhotoSortApp:
     def __init__(self, parent, input_folders):
-        self.parent = parent
+        self.app_parent = parent
+        self.input_folders = input_folders
         self.container = Frame(parent)
-        self.container.pack()
+        self.container.grid(padx=5, pady=5)
+        #self.container.pack()
 
         input_text = "\n".join(input_folders)
         self.input_label = Label(self.container, text=input_text, justify=LEFT, anchor=W)
-        self.input_label.pack(fill=X)
+        self.input_label.grid(columnspan=2, sticky=W)
 
-        self.year_label = Label(self.container, text="Year: *", anchor=W).pack(fill=X)
+        Label(self.container, text="Year: *", anchor=W).grid(row=1, sticky=W)
         self.year_entry = Entry(self.container)
-        self.year_entry.pack()
+        self.year_entry.grid(row=1, column=1)
         self.year_entry.focus()
 
-        self.event_label = Label(self.container, text="Event: *", anchor=W).pack(fill=X)
+        Label(self.container, text="Event: *", anchor=W).grid(row=2, sticky=W)
         self.event_entry = Entry(self.container)
-        self.event_entry.pack()
+        self.event_entry.grid(row=2, column=1)
 
-        self.photographer_label = Label(self.container, text="Photographer:", anchor=W).pack(fill=X)
+        Label(self.container, text="Photographer:", anchor=W).grid(row=3, sticky=W)
         self.photographer_entry = Entry(self.container)
-        self.photographer_entry.pack()
+        self.photographer_entry.grid(row=3, column=1)
 
         self.process_button = Button(self.container)
         self.process_button["text"] = "Process"
-        self.process_button.pack(side=LEFT)
+        self.process_button.grid(row=4, sticky=W)
         self.process_button.bind("<Button-1>", self.process_button_click)
 
         self.cancel_button = Button(self.container)
         self.cancel_button["text"] = "Cancel"
-        self.cancel_button.pack(side=RIGHT)
+        self.cancel_button.grid(row=4, column=1, sticky=E)
         self.cancel_button.bind("<Button-1>", self.cancel_button_click)
+
+        self.status_string = StringVar()
+        self.status_string.set("Fill in fields and press Process to start")
+        self.status_label = Label(self.container, textvariable=self.status_string, justify=LEFT, anchor=W)
+        self.status_label.grid(row=5, columnspan=2, sticky=W)
 
     def cancel_button_click(self, event):
         report_event(event)
-        self.parent.destroy()
+        self.app_parent.destroy()
 
     def process_button_click(self, event):
         report_event(event)
-        year = self.year_entry.get()
-        event = self.event_entry.get()
-        photographer = self.photographer_entry.get()
+        year = self.year_entry.get().strip()
+        event = self.event_entry.get().strip()
+        photographer = self.photographer_entry.get().strip()
+        
+        if check_fields(year, event, photographer):
+            self.status_string.set("Choose output folder.")
+            output = tkFileDialog.askdirectory(title="Choose output folder", mustexist=True)
+            if output != "":
+                self.status_string.set("Processing folders. Please wait...")
+                process(self.input_folders, output, year, event, photographer, False)
+                self.status_string.set("Done!")
+        else:
+            self.status_string.set("Please fill in required fields correctly.")
 
-        print year, event, photographer
+def check_fields(year, event, photographer):
+    valid = True
+    if len(year) != 4:
+        valid = False
+
+    if len(event) == 0:
+        valid = False
+
+    return valid
 
 def report_event(event):
     """Print a description of an event, based on its attributes.
@@ -78,6 +104,7 @@ def main():
 
     root = Tk()
     root.wm_title("Photo Sort")
+    root.resizable(width=FALSE, height=FALSE)
     app = PhotoSortApp(root, arguments['<input>'])
     root.mainloop()
 
