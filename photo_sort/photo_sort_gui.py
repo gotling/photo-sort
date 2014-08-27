@@ -17,10 +17,12 @@ import tkFileDialog
 
 from docopt import docopt
 
-from photo_sort import process
+import photo_sort
 
 class PhotoSortApp:
     def __init__(self, parent, input_folders):
+        self.photoSort = photo_sort.PhotoSort(False, False)
+
         self.app_parent = parent
         self.input_folders = input_folders
         self.container = Frame(parent)
@@ -74,7 +76,7 @@ class PhotoSortApp:
             output = tkFileDialog.askdirectory(title="Choose output folder", initialdir=self.input_folders[0], mustexist=True)
             if output != "":
                 self.status_string.set("Processing folders. Please wait...")
-                process(self.input_folders, output, year, event, photographer, False)
+                self.photoSort.process(self.input_folders, output, year, event, photographer)
                 self.status_string.set("Done!")
         else:
             self.status_string.set("Please fill in required fields correctly.")

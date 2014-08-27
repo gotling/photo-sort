@@ -43,7 +43,6 @@ import exiftool
 
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
-dry_run = False
 
 def folder_name(year, event, photographer, serial=None):
     output_folder_name = '%s - %s' % (year, event)
@@ -93,22 +92,6 @@ def get_output_file_name(year, event, photographer, index_mask, index, input_fil
     output_file_name += extension.lower()
 
     return output_file_name
-
-def copy_files(year, event, photographer, input_files, output_folder):
-    file_count = len(input_files)
-    index_mask = get_index_mask(file_count)
-
-    for index, key in enumerate(sorted(input_files)):
-        input_file = input_files[key]
-        output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
-        output_file = output_folder + '/' + output_file_name
-
-        if not dry_run:
-            shutil.copy2(input_file, output_file)
-
-        print output_file_name
-
-    print 'Copied %d files.' % file_count
 
 def get_video_rotation(et, file):
     """Return value HandBrake uses for rotation"""
@@ -184,27 +167,52 @@ def get_input_files(directories):
 
     return input_files
 
-def process(input, output, year, event, photographer, skip_encode=False):
-    output_folder = folder_path(output, year, event, photographer)
-    mkdir(output_folder)
-    print "Output directory:", output_folder
+class PhotoSort():
+    def __init__(self, skip_encode, dry_run):
+        self.skip_encode = skip_encode
+        self.dry_run = dry_run
 
-    input_files = get_input_files(input)
-    
-    copy_files(year, event, photographer, input_files, output_folder)
+    def copy_files(self, year, event, photographer, input_files, output_folder):
+        file_count = len(input_files)
+        index_mask = get_index_mask(file_count)
 
-    if not skip_encode and not dry_run:
-        encode_videos(output_folder)
+        for index, key in enumerate(sorted(input_files)):
+            input_file = input_files[key]
+            output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
+            output_file = output_folder + '/' + output_file_name
 
-    print "\nAll done!"
+            if not self.dry_run:
+                shutil.copy2(input_file, output_file)
+
+            print output_file_name
+
+        print 'Copied %d files.' % file_count
+
+    def process(self, input, output, year, event, photographer, skip_encode=False):
+        print "Dry run:", self.dry_run, "Skip encode: ", skip_encode
+
+        output_folder = folder_path(output, year, event, photographer)
+        
+        if not self.dry_run:
+            mkdir(output_folder)
+
+        print "Output directory:", output_folder
+
+        input_files = get_input_files(input)
+        
+        self.copy_files(year, event, photographer, input_files, output_folder)
+
+        if not self.skip_encode and not self.dry_run:
+            encode_videos(output_folder)
+
+        print "\nAll done!"
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    if arguments['--dry-run']:
-        dry_run = True
+    photoSort = PhotoSort(arguments['--skip-encode'], arguments['--dry-run'])
 
-    process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'], arguments['--skip-encode'])
+    photoSort.process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
 
 if __name__ == '__main__':
     main()
