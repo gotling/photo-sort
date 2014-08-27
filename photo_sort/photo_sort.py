@@ -183,15 +183,15 @@ def get_input_files(directories):
 
     return input_files
 
-def process(arguments):
-    output_folder = folder_path(arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
+def process(input, output, year, event, photographer, skip_encode):
+    output_folder = folder_path(output, year, event, photographer)
     mkdir(output_folder)
     print "Output directory:", output_folder
 
-    input_files = get_input_files(arguments['--input'])
-    copy_files(arguments['<year>'], arguments['<event>'], arguments['<photographer>'], input_files, output_folder)
+    input_files = get_input_files(input)
+    copy_files(year, event, photographer, input_files, output_folder)
 
-    if not arguments['--skip-encode']:
+    if not skip_encode:
         encode_videos(output_folder)
 
     print "\nAll done!"
@@ -199,7 +199,7 @@ def process(arguments):
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    process(arguments)
+    process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
 
 if __name__ == '__main__':
     main()
