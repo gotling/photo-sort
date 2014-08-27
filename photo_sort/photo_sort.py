@@ -7,13 +7,14 @@ Usage:
     photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [options]
 
 Options:
-    -i --input ...     Folder(s) with photos to process
-    -o --output        Where to create new folder
-    -y --year          Year the photos were taken
-    -e --event         Name of the event
-    -p --photographer  Name of person taking the photos
-    --skip-encode      Do not encode videos
-    --dry-run          Make no changes
+    -i --input <input>...             Folder(s) with photos to process
+    -o --output <output>              Where to create new folder
+    -y --year <year>                  Year the photos were taken
+    -e --event <event>                Name of the event
+    -p --photographer <photographer>  Name of person taking the photos
+    --skip-encode                     Do not encode videos
+    --dry-run                         Make no changes
+    --move                            Move files instead of copy
 
 Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
@@ -167,10 +168,19 @@ def get_input_files(directories):
 
     return input_files
 
+class Mode:
+    COPY = 0
+    MOVE = 1
+
 class PhotoSort():
-    def __init__(self, skip_encode, dry_run):
+    def __init__(self, skip_encode, dry_run, move=False):
         self.skip_encode = skip_encode
         self.dry_run = dry_run
+        
+        if move:
+            self.mode = Mode.MOVE
+        else:
+            self.mode = Mode.COPY
 
     def copy_files(self, year, event, photographer, input_files, output_folder):
         file_count = len(input_files)
@@ -182,14 +192,20 @@ class PhotoSort():
             output_file = output_folder + '/' + output_file_name
 
             if not self.dry_run:
-                shutil.copy2(input_file, output_file)
+                if (self.mode == Mode.MOVE):
+                    shutil.move(input_file, output_file)
+                else:
+                    shutil.copy2(input_file, output_file)
 
             print output_file_name
 
-        print 'Copied %d files.' % file_count
+        if self.mode == Mode.MOVE:
+            print 'Moved %d files.' % file_count
+        else:
+            print 'Copied %d files.' % file_count
 
-    def process(self, input, output, year, event, photographer, skip_encode=False):
-        print "Dry run:", self.dry_run, "Skip encode: ", skip_encode
+    def process(self, input, output, year, event, photographer):
+        print "Dry run:", self.dry_run, "Skip encode:", self.skip_encode, "Mode:", self.mode
 
         output_folder = folder_path(output, year, event, photographer)
         
@@ -210,9 +226,9 @@ class PhotoSort():
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    photoSort = PhotoSort(arguments['--skip-encode'], arguments['--dry-run'])
-
-    photoSort.process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
+    photoSort = PhotoSort(arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
+    print arguments
+    photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], photographer=arguments['--photographer'])
 
 if __name__ == '__main__':
     main()
