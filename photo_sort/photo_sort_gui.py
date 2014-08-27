@@ -71,7 +71,7 @@ class PhotoSortApp:
         
         if check_fields(year, event, photographer):
             self.status_string.set("Choose output folder.")
-            output = tkFileDialog.askdirectory(title="Choose output folder", mustexist=True)
+            output = tkFileDialog.askdirectory(title="Choose output folder", initialdir=self.input_folders[0], mustexist=True)
             if output != "":
                 self.status_string.set("Processing folders. Please wait...")
                 process(self.input_folders, output, year, event, photographer, False)
