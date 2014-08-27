@@ -20,7 +20,7 @@ Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
 
 More info:
-    Encoding of videos requires HandBrakeCLI to be on the system path
+    Encoding of videos requires HandBrakeCLI and ExifTool to be on the system path.
 """
 
 __author__ = "Marcus Götling"
