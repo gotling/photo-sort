@@ -59,14 +59,14 @@ def folder_name(year, event, photographer, serial=None):
 
 def folder_path(output, year, event, photographer):
     output_folder_name = folder_name(year, event, photographer)
-    output_folder = os.path.abspath(output) + '/' + output_folder_name
+    output_folder = os.path.join(os.path.abspath(output), output_folder_name)
 
     serial = 1
 
     while (os.path.isdir(output_folder)):
         serial += 1
         output_folder_name = folder_name(year, event, photographer, serial)
-        output_folder = os.path.abspath(output) + '/' + output_folder_name
+        output_folder = os.path.join(os.path.abspath(output), output_folder_name)
 
     return output_folder
 
@@ -78,6 +78,7 @@ def mkdir(output_folder):
             raise
 
 def get_index_mask(file_count):
+    """Get mask for for numbering of pictures"""
     if file_count < 10:
         return '%d'
     else:
@@ -111,7 +112,7 @@ def get_video_rotation(et, file):
 
 def encode_videos(output_folder):
     """Encode videos using HandBrakeCLI"""
-    files = glob(output_folder + '/*.*')
+    files = glob(os.path.join(output_folder, '*.*'))
 
     with exiftool.ExifTool() as et:
         for input_file in files:
@@ -157,7 +158,7 @@ def get_input_files(directories):
     input_files = {}
 
     for directory in directories:
-        files = glob(directory + '/' + '*.*')
+        files = glob(os.path.join(directory, '*.*'))
 
         for file in files:
             time_taken = get_time_taken(file)
@@ -177,7 +178,7 @@ def get_rename_list(year, event, photographer, input_files, output_folder):
     for index, key in enumerate(sorted(input_files)):
         input_file = input_files[key]
         output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
-        output_file = output_folder + '/' + output_file_name
+        output_file = os.path.join(output_folder, output_file_name)
 
         rename = {}
         rename['from'] = input_file
