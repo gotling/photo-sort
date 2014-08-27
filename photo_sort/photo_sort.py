@@ -13,6 +13,7 @@ Options:
     -e --event         Name of the event
     -p --photographer  Name of person taking the photos
     --skip-encode      Do not encode videos
+    --dry-run          Make no changes
 
 Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
@@ -42,6 +43,7 @@ import exiftool
 
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
+dry_run = False
 
 def folder_name(year, event, photographer, serial=None):
     output_folder_name = '%s - %s' % (year, event)
@@ -77,12 +79,8 @@ def mkdir(output_folder):
 def get_index_mask(file_count):
     if file_count < 10:
         return '%d'
-    elif file_count < 100:
-        return '%02d'
-    elif file_count < 1000:
-        return '%03d'
     else:
-        return '%04d' 
+        return '%0' + str(len(str(file_count))) + 'd'
 
 def get_output_file_name(year, event, photographer, index_mask, index, input_file):
     file_name_format = index_mask + ' - %s %s'
@@ -104,7 +102,10 @@ def copy_files(year, event, photographer, input_files, output_folder):
         input_file = input_files[key]
         output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
         output_file = output_folder + '/' + output_file_name
-        shutil.copy2(input_file, output_file)
+
+        if not dry_run:
+            shutil.copy2(input_file, output_file)
+
         print output_file_name
 
     print 'Copied %d files.' % file_count
@@ -183,15 +184,16 @@ def get_input_files(directories):
 
     return input_files
 
-def process(input, output, year, event, photographer, skip_encode):
+def process(input, output, year, event, photographer, skip_encode=False):
     output_folder = folder_path(output, year, event, photographer)
     mkdir(output_folder)
     print "Output directory:", output_folder
 
     input_files = get_input_files(input)
+    
     copy_files(year, event, photographer, input_files, output_folder)
 
-    if not skip_encode:
+    if not skip_encode and not dry_run:
         encode_videos(output_folder)
 
     print "\nAll done!"
@@ -199,7 +201,10 @@ def process(input, output, year, event, photographer, skip_encode):
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'])
+    if arguments['--dry-run']:
+        dry_run = True
+
+    process(arguments['--input'], arguments['<output>'], arguments['<year>'], arguments['<event>'], arguments['<photographer>'], arguments['--skip-encode'])
 
 if __name__ == '__main__':
     main()
