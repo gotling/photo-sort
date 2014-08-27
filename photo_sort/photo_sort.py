@@ -200,31 +200,38 @@ class PhotoSort():
         else:
             self.mode = Mode.COPY
 
-    def process_files(self, rename_list):
-        file_count = len(rename_list)
-
+    def move_files(self, rename_list):
         for rename in rename_list:
-            if not self.dry_run:
-                if (self.mode == Mode.MOVE):
-                    shutil.move(rename["from"], rename["to"])
-                else:
-                    shutil.copy2(rename["from"], rename["to"])
+            shutil.move(rename["from"], rename["to"])
 
             path, file_name = os.path.split(rename["to"])
             print file_name
 
-        if self.mode == Mode.MOVE:
-            if not self.dry_run:
-                print 'Moved %d files.' % file_count
-                with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
-                    json.dump(rename_list, rename_history)
-            else:
-                print 'Would have moved %d files, if not dry run' % file_count
+        if not self.dry_run:
+            print 'Moved %d files.' % len(rename_list)
+            with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
+                json.dump(rename_list, rename_history)
         else:
+            print 'Would have moved %d files, if not dry run' % len(rename_list)
+
+    def copy_files(self, rename_list):
+        for rename in rename_list:
             if not self.dry_run:
-                print 'Copied %d files.' % file_count
-            else:
-                print 'Would have copied %d files, if not dry run' % file_count
+                shutil.copy2(rename["from"], rename["to"])
+
+            path, file_name = os.path.split(rename["to"])
+            print file_name
+
+        if not self.dry_run:
+            print 'Copied %d files.' % len(rename_list)
+        else:
+            print 'Would have copied %d files, if not dry run' % len(rename_list)
+
+    def process_files(self, rename_list):
+        if self.mode == Mode.MOVE:
+            self.move_files(rename_list)
+        else:
+            self.copy_files(rename_list)
 
     def process(self, input, output, year, event, photographer):
         print "Dry run:", self.dry_run, "Skip encode:", self.skip_encode, "Mode:", self.mode
