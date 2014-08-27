@@ -29,6 +29,7 @@ __email__ = "marcus@gotling.se"
 
 import os
 import re
+import json
 import time
 import errno
 import shutil
@@ -39,8 +40,8 @@ from glob import glob
 from datetime import datetime
 
 import exifread
-from docopt import docopt
 import exiftool
+from docopt import docopt
 
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
@@ -168,6 +169,23 @@ def get_input_files(directories):
 
     return input_files
 
+def get_rename_list(year, event, photographer, input_files, output_folder):
+    rename_list = []
+    file_count = len(input_files)
+    index_mask = get_index_mask(file_count)
+    
+    for index, key in enumerate(sorted(input_files)):
+        input_file = input_files[key]
+        output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
+        output_file = output_folder + '/' + output_file_name
+
+        rename = {}
+        rename['from'] = input_file
+        rename['to'] = output_file
+        rename_list.append(rename)
+
+    return rename_list
+
 class Mode:
     COPY = 0
     MOVE = 1
@@ -182,41 +200,49 @@ class PhotoSort():
         else:
             self.mode = Mode.COPY
 
-    def copy_files(self, year, event, photographer, input_files, output_folder):
-        file_count = len(input_files)
-        index_mask = get_index_mask(file_count)
+    def process_files(self, rename_list):
+        file_count = len(rename_list)
 
-        for index, key in enumerate(sorted(input_files)):
-            input_file = input_files[key]
-            output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
-            output_file = output_folder + '/' + output_file_name
-
+        for rename in rename_list:
             if not self.dry_run:
                 if (self.mode == Mode.MOVE):
-                    shutil.move(input_file, output_file)
+                    shutil.move(rename["from"], rename["to"])
                 else:
-                    shutil.copy2(input_file, output_file)
+                    shutil.copy2(rename["from"], rename["to"])
 
-            print output_file_name
+            path, file_name = os.path.split(rename["to"])
+            print file_name
 
         if self.mode == Mode.MOVE:
-            print 'Moved %d files.' % file_count
+            if not self.dry_run:
+                print 'Moved %d files.' % file_count
+                with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
+                    json.dump(rename_list, rename_history)
+            else:
+                print 'Would have moved %d files, if not dry run' % file_count
         else:
-            print 'Copied %d files.' % file_count
+            if not self.dry_run:
+                print 'Copied %d files.' % file_count
+            else:
+                print 'Would have copied %d files, if not dry run' % file_count
 
     def process(self, input, output, year, event, photographer):
         print "Dry run:", self.dry_run, "Skip encode:", self.skip_encode, "Mode:", self.mode
 
         output_folder = folder_path(output, year, event, photographer)
-        
+        input_files = get_input_files(input)
+
+        if len(input_files) == 0:
+            print 'No files to process'
+            return
+
         if not self.dry_run:
             mkdir(output_folder)
 
         print "Output directory:", output_folder
-
-        input_files = get_input_files(input)
         
-        self.copy_files(year, event, photographer, input_files, output_folder)
+        rename_list = get_rename_list(year, event, photographer, input_files, output_folder)
+        self.process_files(rename_list)
 
         if not self.skip_encode and not self.dry_run:
             encode_videos(output_folder)
@@ -227,7 +253,7 @@ def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
     photoSort = PhotoSort(arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
-    print arguments
+
     photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], photographer=arguments['--photographer'])
 
 if __name__ == '__main__':
