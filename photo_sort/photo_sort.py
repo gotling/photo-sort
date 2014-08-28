@@ -43,6 +43,7 @@ import exifread
 import exiftool
 from docopt import docopt
 
+ignored_extensions = ['.thm']
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
 
@@ -165,6 +166,10 @@ def get_input_files(directories):
         files = glob(os.path.join(directory, '*.*'))
 
         for file in files:
+            (base, extension)=os.path.splitext(file)
+            if extension.lower() in ignored_extensions:
+                continue
+
             time_taken = get_time_taken(file)
 
             while time_taken in input_files:
