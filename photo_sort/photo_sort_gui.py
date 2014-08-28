@@ -26,7 +26,7 @@ class PhotoSortApp:
         self.app_parent = parent
         self.input_folders = input_folders
         self.container = Frame(parent)
-        self.container.grid(padx=5, pady=5)
+        self.container.grid(padx=10, pady=10)
 
         input_text = "\n".join(input_folders)
         self.input_label = Label(self.container, text=input_text, justify=LEFT, anchor=W)
@@ -34,20 +34,20 @@ class PhotoSortApp:
 
         Label(self.container, text="Year: *", anchor=W).grid(row=1, sticky=W)
         self.year_entry = Entry(self.container)
-        self.year_entry.grid(row=1, column=1)
+        self.year_entry.grid(row=1, column=1, sticky=W)
         self.year_entry.focus()
 
         Label(self.container, text="Event: *", anchor=W).grid(row=2, sticky=W)
         self.event_entry = Entry(self.container)
-        self.event_entry.grid(row=2, column=1)
+        self.event_entry.grid(row=2, column=1, sticky=W)
 
         Label(self.container, text="Photographer:", anchor=W).grid(row=3, sticky=W)
         self.photographer_entry = Entry(self.container)
-        self.photographer_entry.grid(row=3, column=1)
+        self.photographer_entry.grid(row=3, column=1, sticky=W)
 
         self.mode = IntVar()
         self.mode.set(0)
-        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=4)
+        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=4, sticky=W)
         Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=4, column=1, sticky=W)
 
         self.process_button = Button(self.container)
