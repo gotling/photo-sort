@@ -136,13 +136,17 @@ def encode_videos(output_folder):
 
 def get_time_taken(file):
     """Return date time when photo or video was most likely taken"""
-
+    print file
     f = open(file, 'rb')
     tags = exifread.process_file(f, details=False, stop_tag='EXIF DateTimeOriginal')
     
     if 'EXIF DateTimeOriginal' in tags:
-        date_time = datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
-        return calendar.timegm(date_time.utctimetuple())
+        try:
+            date_time = datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
+            return calendar.timegm(date_time.utctimetuple())
+        except:
+            # Invalid format in EXIF tag, continue
+            pass
 
     match=re.search(r'.+(\d{8}_\d{6}).+', file)
     
