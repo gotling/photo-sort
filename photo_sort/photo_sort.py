@@ -201,6 +201,9 @@ class PhotoSort():
         else:
             self.mode = Mode.COPY
 
+    def set_mode(self, mode):
+        self.mode = mode
+
     def move_files(self, rename_list):
         for rename in rename_list:
             shutil.move(rename["from"], rename["to"])
