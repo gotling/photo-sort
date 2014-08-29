@@ -39,7 +39,6 @@ import subprocess
 from glob import glob
 from datetime import datetime
 
-import exifread
 import exiftool
 from docopt import docopt
 
@@ -150,19 +149,16 @@ def get_metadata_file(file):
     else:
         return file
 
-def get_time_taken(file):
+def get_time_taken(file, et):
     """Return date time when photo or video was most likely taken"""
     metadata_file = get_metadata_file(file)
-    f = open(metadata_file, 'rb')
-    tags = exifread.process_file(f, details=False, stop_tag='EXIF DateTimeOriginal')
-    
-    if 'EXIF DateTimeOriginal' in tags:
-        try:
-            date_time = datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
-            return calendar.timegm(date_time.utctimetuple())
-        except:
-            # Invalid format in EXIF tag, continue
-            pass
+
+    try:
+        date_time = datetime.strptime(str(et.get_tag('EXIF:DateTimeOriginal', metadata_file)), '%Y:%m:%d %H:%M:%S')
+        return calendar.timegm(date_time.utctimetuple())
+    except:
+        # Invalid format in EXIF tag, continue
+        pass
 
     match=re.search(r'.+(\d{8}_\d{6}).+', file)
     
@@ -178,20 +174,21 @@ def get_input_files(directories):
     """Get all files from multiple directories sorted by date"""
     input_files = {}
 
-    for directory in directories:
-        files = glob(os.path.join(directory, '*.*'))
+    with exiftool.ExifTool() as et:
+        for directory in directories:
+            files = glob(os.path.join(directory, '*.*'))
 
-        for file in files:
-            (base, extension)=os.path.splitext(file)
-            if extension.lower() in ignored_extensions:
-                continue
+            for file in files:
+                (base, extension)=os.path.splitext(file)
+                if extension.lower() in ignored_extensions:
+                    continue
 
-            time_taken = get_time_taken(file)
+                time_taken = get_time_taken(file, et)
 
-            while time_taken in input_files:
-                time_taken += 1
+                while time_taken in input_files:
+                    time_taken += 1
 
-            input_files[time_taken] = file
+                input_files[time_taken] = file
 
     return input_files
 
