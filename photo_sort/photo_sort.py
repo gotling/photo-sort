@@ -135,10 +135,25 @@ def encode_videos(output_folder):
                 subprocess.call(command)
                 os.remove(input_file)
 
+def get_metadata_file(file):
+    """MPEG videos sometimes store EXIF data in a sepparate .thm file"""
+    (base, extension)=os.path.splitext(file)
+
+    if extension.lower() in ['.mpg', '.mpeg']:
+        for meta_extension in ['.thm', '.THM']:
+            meta_file = base + meta_extension
+
+            if os.path.isfile(meta_file):
+                return meta_file
+
+        return file
+    else:
+        return file
+
 def get_time_taken(file):
     """Return date time when photo or video was most likely taken"""
-    print file
-    f = open(file, 'rb')
+    metadata_file = get_metadata_file(file)
+    f = open(metadata_file, 'rb')
     tags = exifread.process_file(f, details=False, stop_tag='EXIF DateTimeOriginal')
     
     if 'EXIF DateTimeOriginal' in tags:
@@ -156,6 +171,7 @@ def get_time_taken(file):
         return calendar.timegm(date_time.utctimetuple())
 
     os_modify_time = os.path.getmtime(file)
+    
     return os_modify_time
 
 def get_input_files(directories):
