@@ -132,6 +132,12 @@ def encode_videos(output_folder):
                     command.append("--rotate=" + str(rotation))
 
                 subprocess.call(command)
+
+                # Copy EXIF data and date from old to new file
+                ret = subprocess.call(["exiftool", "-quiet", "-preserve", "-overwrite_original", "-TagsFromFile", input_file, output_file])
+                if ret != 0:
+                    print("Error copying EXIF information to new video!")
+
                 os.remove(input_file)
 
 def get_metadata_file(file):
