@@ -220,8 +220,8 @@ class Mode:
     MOVE = 1
 
 class PhotoSort():
-    def __init__(self, skip_encode, dry_run, move=False):
-        self.skip_encode = skip_encode
+    def __init__(self, encode, dry_run, move=False):
+        self.encode = encode
         self.dry_run = dry_run
         
         if move:
@@ -233,7 +233,7 @@ class PhotoSort():
         self.mode = mode
 
     def set_encode_videos(self, encode):
-        self.skip_encode = not encode
+        self.encode = encode
 
     def move_files(self, rename_list):
         for rename in rename_list:
@@ -269,7 +269,7 @@ class PhotoSort():
             self.copy_files(rename_list)
 
     def process(self, input, output, year, event, photographer):
-        print "Dry run:", self.dry_run, "Skip encode:", self.skip_encode, "Mode:", self.mode
+        print "Dry run:", self.dry_run, "Encode vides:", self.encode, "Mode:", self.mode
 
         output_folder = folder_path(output, year, event, photographer)
         input_files = get_input_files(input)
@@ -286,7 +286,7 @@ class PhotoSort():
         rename_list = get_rename_list(year, event, photographer, input_files, output_folder)
         self.process_files(rename_list)
 
-        if not self.skip_encode and not self.dry_run:
+        if self.encode and not self.dry_run:
             encode_videos(output_folder)
 
         print "\nAll done!"
@@ -294,7 +294,7 @@ class PhotoSort():
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    photoSort = PhotoSort(arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
+    photoSort = PhotoSort(not arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
 
     photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], photographer=arguments['--photographer'])
 
