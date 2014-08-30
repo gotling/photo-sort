@@ -232,6 +232,9 @@ class PhotoSort():
     def set_mode(self, mode):
         self.mode = mode
 
+    def set_encode_videos(self, encode):
+        self.skip_encode = not encode
+
     def move_files(self, rename_list):
         for rename in rename_list:
             shutil.move(rename["from"], rename["to"])
