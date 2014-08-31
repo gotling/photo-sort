@@ -11,6 +11,7 @@ __author__ = "Marcus Götling"
 __license__ = "MIT"
 __email__ = "marcus@gotling.se"
 
+import os
 import sys
 from Tkinter import *
 import tkFileDialog
@@ -86,7 +87,8 @@ class PhotoSortApp:
         
         if check_fields(year, event, photographer):
             self.status_string.set("Choose output folder.")
-            output = tkFileDialog.askdirectory(title="Choose output folder", initialdir=self.input_folders[0], mustexist=True)
+            dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
+            output = tkFileDialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
             if output != "":
                 self.status_string.set("Processing folders. Please wait...")
                 self.photoSort.set_mode(self.mode.get())
