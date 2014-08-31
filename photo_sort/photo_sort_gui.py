@@ -41,33 +41,37 @@ class PhotoSortApp:
         self.event_entry = Entry(self.container)
         self.event_entry.grid(row=2, column=1, sticky=W)
 
-        Label(self.container, text="Photographer:", anchor=W).grid(row=3, sticky=W)
+        Label(self.container, text="Sub Event:", anchor=W).grid(row=3, sticky=W)
+        self.sub_event_entry = Entry(self.container)
+        self.sub_event_entry.grid(row=3, column=1, sticky=W)
+
+        Label(self.container, text="Photographer:", anchor=W).grid(row=4, sticky=W)
         self.photographer_entry = Entry(self.container)
-        self.photographer_entry.grid(row=3, column=1, sticky=W)
+        self.photographer_entry.grid(row=4, column=1, sticky=W)
 
         self.mode = IntVar()
         self.mode.set(0)
-        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=4, sticky=W)
-        Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=4, column=1, sticky=W)
+        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=5, sticky=W)
+        Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=5, column=1, sticky=W)
 
         self.encode = BooleanVar()
         self.encode.set(True)
-        Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=5, columnspan=2, sticky=W)
+        Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=6, columnspan=2, sticky=W)
 
         self.process_button = Button(self.container)
         self.process_button["text"] = "Process"
-        self.process_button.grid(row=6, sticky=W)
+        self.process_button.grid(row=7, sticky=W)
         self.process_button.bind("<Button-1>", self.process_button_click)
 
         self.cancel_button = Button(self.container)
         self.cancel_button["text"] = "Cancel"
-        self.cancel_button.grid(row=6, column=1, sticky=E)
+        self.cancel_button.grid(row=7, column=1, sticky=E)
         self.cancel_button.bind("<Button-1>", self.cancel_button_click)
 
         self.status_string = StringVar()
         self.status_string.set("Fill in fields and press Process to start")
         self.status_label = Label(self.container, textvariable=self.status_string, justify=LEFT, anchor=W)
-        self.status_label.grid(row=7, columnspan=2, sticky=W)
+        self.status_label.grid(row=8, columnspan=2, sticky=W)
 
     def cancel_button_click(self, event):
         report_event(event)
@@ -77,6 +81,7 @@ class PhotoSortApp:
         report_event(event)
         year = self.year_entry.get().strip()
         event = self.event_entry.get().strip()
+        sub_event = self.sub_event_entry.get().strip()
         photographer = self.photographer_entry.get().strip()
         
         if check_fields(year, event, photographer):
@@ -86,7 +91,7 @@ class PhotoSortApp:
                 self.status_string.set("Processing folders. Please wait...")
                 self.photoSort.set_mode(self.mode.get())
                 self.photoSort.set_encode_videos(self.encode.get())
-                self.photoSort.process(self.input_folders, output, year, event, photographer)
+                self.photoSort.process(self.input_folders, output, year, event, sub_event, photographer)
                 self.status_string.set("Done!")
         else:
             self.status_string.set("Please fill in required fields correctly.")

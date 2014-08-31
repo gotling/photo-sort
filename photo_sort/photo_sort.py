@@ -4,14 +4,15 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-p <photographer>] [options]
+    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-s <sub-event>] [-p <photographer>] [options]
 
 Options:
     -i --input <input>...             Folder(s) with photos to process
     -o --output <output>              Where to create new folder
     -y --year <year>                  Year the photos were taken
     -e --event <event>                Name of the event
-    -p --photographer <photographer>  Name of person taking the photos
+    -s --sub-event <sub-event>        Optional: Name of part of the event
+    -p --photographer <photographer>  Optional: Name of person taking the photos
     --skip-encode                     Do not encode videos
     --dry-run                         Make no changes
     --move                            Move files instead of copy
@@ -57,7 +58,7 @@ def folder_name(year, event, photographer, serial=None):
 
     return output_folder_name
 
-def folder_path(output, year, event, photographer):
+def folder_path(output, year, event, sub_event, photographer):
     output_folder_name = folder_name(year, event, photographer)
     output_folder = os.path.join(os.path.abspath(output), output_folder_name)
 
@@ -84,9 +85,13 @@ def get_index_mask(file_count):
     else:
         return '%0' + str(len(str(file_count))) + 'd'
 
-def get_output_file_name(year, event, photographer, index_mask, index, input_file):
-    file_name_format = index_mask + ' - %s %s'
-    output_file_name = file_name_format % (index + 1, event, year)
+def get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file):
+    if sub_event:
+        file_name_format = index_mask + ' - %s - %s %s'
+        output_file_name = file_name_format % (index + 1, sub_event, event, year)
+    else:
+        file_name_format = index_mask + ' - %s %s'
+        output_file_name = file_name_format % (index + 1, event, year)
     
     if photographer:
         output_file_name += ' - ' + photographer
@@ -198,14 +203,14 @@ def get_input_files(directories):
 
     return input_files
 
-def get_rename_list(year, event, photographer, input_files, output_folder):
+def get_rename_list(year, event, sub_event, photographer, input_files, output_folder):
     rename_list = []
     file_count = len(input_files)
     index_mask = get_index_mask(file_count)
     
     for index, key in enumerate(sorted(input_files)):
         input_file = input_files[key]
-        output_file_name = get_output_file_name(year, event, photographer, index_mask, index, input_file)
+        output_file_name = get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file)
         output_file = os.path.join(output_folder, output_file_name)
 
         rename = {}
@@ -268,10 +273,10 @@ class PhotoSort():
         else:
             self.copy_files(rename_list)
 
-    def process(self, input, output, year, event, photographer):
+    def process(self, input, output, year, event, sub_event, photographer):
         print "Dry run:", self.dry_run, "Encode vides:", self.encode, "Mode:", self.mode
 
-        output_folder = folder_path(output, year, event, photographer)
+        output_folder = folder_path(output, year, event, sub_event, photographer)
         input_files = get_input_files(input)
 
         if len(input_files) == 0:
@@ -283,7 +288,7 @@ class PhotoSort():
 
         print "Output directory:", output_folder
         
-        rename_list = get_rename_list(year, event, photographer, input_files, output_folder)
+        rename_list = get_rename_list(year, event, sub_event, photographer, input_files, output_folder)
         self.process_files(rename_list)
 
         if self.encode and not self.dry_run:
@@ -296,7 +301,7 @@ def main():
 
     photoSort = PhotoSort(not arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
 
-    photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], photographer=arguments['--photographer'])
+    photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], sub_event=arguments['--sub-event'], photographer=arguments['--photographer'])
 
 if __name__ == '__main__':
     main()
