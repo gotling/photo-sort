@@ -221,15 +221,61 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
 
     return rename_list
 
+def yes_no_dialog(prompt):
+    yes = set(['yes','y', 'ye', 'j', ''])
+
+    choice = raw_input(prompt).lower()
+
+    if choice in yes:
+        return True
+    else:
+        return False
+
+def display_preview(rename_list):
+    extension_count = {}
+
+    len_before = len(os.path.split(rename_list[0]["from"])[1])
+    len_after = len(os.path.split(rename_list[0]["to"])[1])
+
+    header_format = "{0:^" + str(len_before) + "}{1:^" + str(len_after) + "}"
+    print header_format.format("Before", "After")
+    print "-" * len_before + "\t" + "-" * len_after
+
+    for rename in rename_list:
+        path, old_name = os.path.split(rename['from'])
+        base, extension = os.path.splitext(old_name)
+        path, new_name = os.path.split(rename['to'])
+
+        if extension in extension_count:
+            extension_count[extension] += 1
+        else:
+            extension_count[extension] = 1
+
+        print old_name, "\t", new_name
+
+    extensions = []
+
+    for extension in extension_count:
+        extensions.append("%s=%d" % (extension, extension_count[extension]))
+
+    print "\nNumber of files:", ", ".join(extensions)
+
 class Mode:
     COPY = 0
     MOVE = 1
+
+def mode_to_string(mode):
+    if mode == Mode.COPY:
+        return "copy"
+    else:
+        return "move"
 
 class PhotoSort():
     def __init__(self, encode, dry_run, move=False, rename_history=False, interactive=False):
         self.encode = encode
         self.dry_run = dry_run
         self.rename_history = rename_history
+        self.interactive = interactive
         
         if move:
             self.mode = Mode.MOVE
