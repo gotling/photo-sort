@@ -16,6 +16,7 @@ Options:
     --skip-encode                     Do not encode videos
     --dry-run                         Make no changes
     --move                            Move files instead of copy
+    --rename-history                  Write names before and after move to a file in output directory
 
 Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
@@ -225,9 +226,10 @@ class Mode:
     MOVE = 1
 
 class PhotoSort():
-    def __init__(self, encode, dry_run, move=False):
+    def __init__(self, encode, dry_run, move=False, rename_history=False, interactive=False):
         self.encode = encode
         self.dry_run = dry_run
+        self.rename_history = rename_history
         
         if move:
             self.mode = Mode.MOVE
@@ -249,8 +251,10 @@ class PhotoSort():
 
         if not self.dry_run:
             print 'Moved %d files.' % len(rename_list)
-            with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
-                json.dump(rename_list, rename_history)
+
+            if self.rename_history:
+                with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
+                    json.dump(rename_list, rename_history)
         else:
             print 'Would have moved %d files, if not dry run' % len(rename_list)
 
@@ -274,32 +278,47 @@ class PhotoSort():
             self.copy_files(rename_list)
 
     def process(self, input, output, year, event, sub_event, photographer):
-        print "Dry run:", self.dry_run, "Encode vides:", self.encode, "Mode:", self.mode
-
         output_folder = folder_path(output, year, event, sub_event, photographer)
+        print """
+Event: {0:<30}Sub event: {2}
+Year:  {1:<27}Photographer: {3}
+
+processing={6}, dry-run={4}, encode-videos={5}, interactive={7},
+output="{8}"
+""".format(event, year, sub_event, photographer, self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder)
+        print "Building file list..\n"
         input_files = get_input_files(input)
 
         if len(input_files) == 0:
-            print 'No files to process'
+            print 'No files to process.'
             return
 
         if not self.dry_run:
             mkdir(output_folder)
-
-        print "Output directory:", output_folder
         
         rename_list = get_rename_list(year, event, sub_event, photographer, input_files, output_folder)
+        
+        if self.interactive:
+            display_preview(rename_list)
+            if not yes_no_dialog("\nContinue? [yes] "):
+                print 'Photo sort aborted.'
+                return
+
         self.process_files(rename_list)
 
         if self.encode and not self.dry_run:
             encode_videos(output_folder)
+
+        if self.mode == Mode.MOVE:
+            for input_folder in input:
+                shutil.rmtree(input_folder)
 
         print "\nAll done!"
 
 def main():
     arguments = docopt(__doc__, version='Photo Sort 1.0.0')
 
-    photoSort = PhotoSort(not arguments['--skip-encode'], arguments['--dry-run'], arguments['--move'])
+    photoSort = PhotoSort(encode=not arguments['--skip-encode'], dry_run=arguments['--dry-run'], move=arguments['--move'], rename_history=arguments['--rename-history'], interactive=True)
 
     photoSort.process(arguments['--input'], arguments['--output'], year=arguments['--year'], event=arguments['--event'], sub_event=arguments['--sub-event'], photographer=arguments['--photographer'])
 
