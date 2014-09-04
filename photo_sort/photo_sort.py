@@ -48,7 +48,7 @@ ignored_extensions = ['.thm']
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
 
-def folder_name(year, event, photographer, serial=None):
+def folder_name(year, event, photographer=None, serial=None):
     output_folder_name = '%s - %s' % (year, event)
     
     if serial:
@@ -59,7 +59,7 @@ def folder_name(year, event, photographer, serial=None):
 
     return output_folder_name
 
-def folder_path(output, year, event, sub_event, photographer):
+def folder_path(output, year, event, sub_event=None, photographer=None):
     output_folder_name = folder_name(year, event, photographer)
     output_folder = os.path.join(os.path.abspath(output), output_folder_name)
 
