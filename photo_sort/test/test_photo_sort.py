@@ -47,8 +47,23 @@ class PhotoSortTests(unittest.TestCase):
         os.makedirs(result)
 
         result = photo_sort.folder_path(output, year, event, photographer=photographer)
-        self.assertEqual(os.path.join(output, '2014 - Boom - 2 - Marcus'), result)        
+        self.assertEqual(os.path.join(output, '2014 - Boom - 2 - Marcus'), result)
 
+    def test_index_mask(self):
+        result = photo_sort.get_index_mask(1)
+        self.assertEqual('%d', result)
+
+        result = photo_sort.get_index_mask(10)
+        self.assertEqual('%02d', result)       
+
+        result = photo_sort.get_index_mask(100)
+        self.assertEqual('%03d', result)
+
+        result = photo_sort.get_index_mask(1000)
+        self.assertEqual('%04d', result)
+
+        result = photo_sort.get_index_mask(10000)
+        self.assertEqual('%05d', result)
 
 def main():
     unittest.main()
