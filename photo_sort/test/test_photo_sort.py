@@ -65,6 +65,26 @@ class PhotoSortTests(unittest.TestCase):
         result = photo_sort.get_index_mask(10000)
         self.assertEqual('%05d', result)
 
+    def test_output_file_name(self):
+        year = 2014
+        event = 'Boom'
+        sub_event = None
+        photographer = None
+        index_mask = '%d'
+        index = 0
+        input_file = os.path.join(self.temp_dir, 'IMG4101.jpg')
+
+        result = photo_sort.get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file)
+        self.assertEqual('1 - Boom 2014.jpg', result)
+
+        photographer = 'Marcus'
+        result = photo_sort.get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file)
+        self.assertEqual('1 - Boom 2014 - Marcus.jpg', result)
+
+        sub_event = 'Beach'
+        result = photo_sort.get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file)
+        self.assertEqual('1 - Beach - Boom 2014 - Marcus.jpg', result)
+
 def main():
     unittest.main()
 
