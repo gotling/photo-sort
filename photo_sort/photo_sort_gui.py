@@ -33,12 +33,12 @@ class PhotoSortApp:
         self.input_label = Label(self.container, text=input_text, justify=LEFT, anchor=W)
         self.input_label.grid(columnspan=2, sticky=W)
 
-        Label(self.container, text="Year: *", anchor=W).grid(row=1, sticky=W)
+        Label(self.container, text="Year:", anchor=W).grid(row=1, sticky=W)
         self.year_entry = Entry(self.container)
         self.year_entry.grid(row=1, column=1, sticky=W)
         self.year_entry.focus()
 
-        Label(self.container, text="Event: *", anchor=W).grid(row=2, sticky=W)
+        Label(self.container, text="Event:", anchor=W).grid(row=2, sticky=W)
         self.event_entry = Entry(self.container)
         self.event_entry.grid(row=2, column=1, sticky=W)
 
@@ -99,14 +99,7 @@ class PhotoSortApp:
             self.status_string.set("Please fill in required fields correctly.")
 
 def check_fields(year, event, photographer):
-    valid = True
-    if len(year) != 4:
-        valid = False
-
-    if len(event) == 0:
-        valid = False
-
-    return valid
+    return True
 
 def report_event(event):
     """Print a description of an event, based on its attributes.
@@ -119,7 +112,7 @@ def report_event(event):
         "EventKeySymbol=" + str(event.keysym)
 
 def main():
-    arguments = docopt(__doc__, version='Photo Sort GUI 1.0.0')
+    arguments = docopt(__doc__, version=photo_sort.version)
 
     root = Tk()
     root.wm_title("Photo Sort")

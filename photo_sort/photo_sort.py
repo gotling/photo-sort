@@ -4,13 +4,13 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> ... -o <output> -y <year> -e <event> [-s <sub-event>] [-p <photographer>] [options]
+    photo-sort.py -i <input> ... -o <output> [-y <year>] [-e <event>] [-s <sub-event>] [-p <photographer>] [options]
 
 Options:
     -i --input <input>...             Folder(s) with photos to process
     -o --output <output>              Where to create new folder
-    -y --year <year>                  Year the photos were taken
-    -e --event <event>                Name of the event
+    -y --year <year>                  Optional: Year the photos were taken
+    -e --event <event>                Optional: Name of the event
     -s --sub-event <sub-event>        Optional: Name of part of the event
     -p --photographer <photographer>  Optional: Name of person taking the photos
     --skip-encode                     Do not encode videos
@@ -47,20 +47,34 @@ from docopt import docopt
 ignored_extensions = ['.thm']
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
+version = 'Photo Sort 1.1.0.b1'
 
-def folder_name(year, event, photographer=None, serial=None):
-    output_folder_name = '%s - %s' % (year, event)
+def folder_name(year=None, event=None, photographer=None, serial=None):
+    if year and event:
+        output_folder_name = '%s - %s' % (year, event)
+    elif year:
+        output_folder_name = year
+    elif event:
+        output_folder_name = event
+    else:
+        output_folder_name = ''
     
     if serial:
-        output_folder_name += ' - ' + str(serial)
+        if len(output_folder_name):
+            output_folder_name += ' - ' + str(serial)
+        else:
+            output_folder_name = str(serial)
     
     if photographer:
         output_folder_name += ' - ' + photographer
 
     return output_folder_name
 
-def folder_path(output, year, event, sub_event=None, photographer=None):
-    output_folder_name = folder_name(year, event, photographer)
+def folder_path(output=None, year=None, event=None, sub_event=None, photographer=None):
+    if not year and not event and not sub_event and not photographer:
+        output_folder_name = folder_name(serial=1)    
+    else:
+        output_folder_name = folder_name(year=year, event=event, photographer=photographer)
     output_folder = os.path.join(os.path.abspath(output), output_folder_name)
 
     serial = 1
@@ -87,12 +101,19 @@ def get_index_mask(file_count):
         return '%0' + str(len(str(file_count))) + 'd'
 
 def get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file):
+    output_file_name = index_mask % (index + 1)
+
     if sub_event:
-        file_name_format = index_mask + ' - %s - %s %s'
-        output_file_name = file_name_format % (index + 1, sub_event, event, year)
-    else:
-        file_name_format = index_mask + ' - %s %s'
-        output_file_name = file_name_format % (index + 1, event, year)
+        output_file_name += ' - ' + sub_event 
+
+    if event:
+        output_file_name += ' - ' + event 
+
+    if year:
+        if sub_event or event:
+            output_file_name += ' ' + year
+        else:
+            output_file_name += ' - ' + year
     
     if photographer:
         output_file_name += ' - ' + photographer
@@ -362,7 +383,7 @@ output="{8}"
         print "\nAll done!"
 
 def main():
-    arguments = docopt(__doc__, version='Photo Sort 1.0.0')
+    arguments = docopt(__doc__, version=version)
 
     photoSort = PhotoSort(encode=not arguments['--skip-encode'], dry_run=arguments['--dry-run'], move=arguments['--move'], rename_history=arguments['--rename-history'], interactive=True)
 
