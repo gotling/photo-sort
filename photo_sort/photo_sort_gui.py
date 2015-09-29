@@ -13,9 +13,7 @@ import tkinter.filedialog
 from tkinter.messagebox import askyesno
 
 from docopt import docopt
-
-import photo_sort_cli
-
+import photo_sort
 
 __author__ = "Marcus Götling"
 __license__ = "MIT"
@@ -24,8 +22,6 @@ __email__ = "marcus@gotling.se"
 
 class PhotoSortApp:
     def __init__(self, parent, input_folders):
-        self.photoSort = photo_sort_cli.PhotoSort(False, False)
-
         self.app_parent = parent
         self.input_folders = input_folders
         self.container = Frame(parent)
@@ -99,8 +95,8 @@ class PhotoSortApp:
         photographer = self.photographer_entry.get().strip()
 
         if check_fields(year, event, photographer):
-            if self.mode.get() == 2: # Replace
-                self.photoSort.set_mode(1) # Move
+            if self.mode.get() == 2:  # Replace
+                mode = 1  # Move # TODO: Replace with Enum
                 output = None
             else:
                 self.status_string.set("Choose output folder.")
@@ -108,11 +104,14 @@ class PhotoSortApp:
                 output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
                 if output == "":
                     return
-                self.photoSort.set_mode(self.mode.get())
+                mode = self.mode.get()
 
             self.status_string.set("Processing folders. Please wait...")
-            self.photoSort.set_encode_videos(self.encode.get())
-            self.photoSort.process(self.input_folders, output, year, event, sub_event, photographer)
+            photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer, encode=False, dry_run=False)
+            photoSort.set_mode(mode)
+            photoSort.set_encode_videos(self.encode.get())
+            photoSort.process()
+
             self.status_string.set("Done!")
         else:
             self.status_string.set("Please fill in required fields correctly.")
@@ -134,7 +133,7 @@ def report_event(event):
 
 
 def main():
-    arguments = docopt(__doc__, version=photo_sort_cli.version)
+    arguments = docopt(__doc__, version=photo_sort.version)
 
     root = Tk()
     root.wm_title("Photo Sort")
