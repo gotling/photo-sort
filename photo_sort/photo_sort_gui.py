@@ -75,11 +75,11 @@ class PhotoSortApp:
         self.status_label.grid(row=8, columnspan=2, sticky=W)
 
     def cancel_button_click(self, event):
-        report_event(event)
+        #report_event(event)
         self.app_parent.destroy()
 
     def process_button_click(self, event):
-        report_event(event)
+        #report_event(event)
         year = self.year_entry.get().strip()
         event = self.event_entry.get().strip()
         sub_event = self.sub_event_entry.get().strip()
