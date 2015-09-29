@@ -7,18 +7,18 @@ Usage:
     photo_sort_gui.py <input> ...
 """
 
-__author__ = "Marcus Götling"
-__license__ = "MIT"
-__email__ = "marcus@gotling.se"
-
 import os
-import sys
 from tkinter import *
 import tkinter.filedialog
 
 from docopt import docopt
 
-import photo_sort
+from . import photo_sort
+
+
+__author__ = "Marcus Götling"
+__license__ = "MIT"
+__email__ = "marcus@gotling.se"
 
 
 class PhotoSortApp:
