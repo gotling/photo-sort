@@ -50,6 +50,7 @@ video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mk
 handbrake_preset = 'Normal'
 version = 'Photo Sort 1.1.0.b1'
 
+
 def folder_name(year=None, event=None, photographer=None, serial=None):
     if year and event:
         output_folder_name = '%s - %s' % (year, event)
@@ -71,6 +72,7 @@ def folder_name(year=None, event=None, photographer=None, serial=None):
 
     return output_folder_name
 
+
 def folder_path(output=None, year=None, event=None, sub_event=None, photographer=None):
     if not year and not event and not sub_event and not photographer:
         output_folder_name = folder_name(serial=1)    
@@ -87,6 +89,7 @@ def folder_path(output=None, year=None, event=None, sub_event=None, photographer
 
     return output_folder
 
+
 def mkdir(output_folder):
     try:
         os.makedirs(output_folder)
@@ -94,12 +97,14 @@ def mkdir(output_folder):
         if exception.errno != errno.EEXIST:
             raise
 
+
 def get_index_mask(file_count):
     """Get mask for for numbering of pictures"""
     if file_count < 10:
         return '%d'
     else:
         return '%0' + str(len(str(file_count))) + 'd'
+
 
 def get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file):
     output_file_name = index_mask % (index + 1)
@@ -124,6 +129,7 @@ def get_output_file_name(year, event, sub_event, photographer, index_mask, index
 
     return output_file_name
 
+
 def get_video_rotation(et, file):
     """Return value HandBrake uses for rotation"""
     
@@ -137,6 +143,7 @@ def get_video_rotation(et, file):
         return 7
     else:
         return None
+
 
 def encode_videos(output_folder):
     """Encode videos using HandBrakeCLI"""
@@ -181,6 +188,7 @@ def get_metadata_file(file):
 
     return file
 
+
 def get_time_taken(file, et):
     """Return date time when photo or video was most likely taken"""
     metadata_file = get_metadata_file(file)
@@ -201,6 +209,7 @@ def get_time_taken(file, et):
     os_modify_time = os.path.getmtime(file)
     
     return os_modify_time
+
 
 def get_input_files(directories):
     """Get all files from multiple directories sorted by date"""
@@ -224,6 +233,7 @@ def get_input_files(directories):
 
     return input_files
 
+
 def get_rename_list(year, event, sub_event, photographer, input_files, output_folder):
     rename_list = []
     file_count = len(input_files)
@@ -243,6 +253,7 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
 
     return rename_list
 
+
 def yes_no_dialog(prompt):
     yes = set(['yes','y', 'ye', 'j', ''])
 
@@ -252,6 +263,7 @@ def yes_no_dialog(prompt):
         return True
     else:
         return False
+
 
 def display_preview(rename_list):
     extension_count = {}
@@ -282,9 +294,11 @@ def display_preview(rename_list):
 
     print("\nNumber of files:", ", ".join(extensions))
 
+
 class Mode:
     COPY = 0
     MOVE = 1
+
 
 def mode_to_string(mode):
     if mode == Mode.COPY:
@@ -292,7 +306,8 @@ def mode_to_string(mode):
     else:
         return "move"
 
-class PhotoSort():
+
+class PhotoSort:
     def __init__(self, encode, dry_run, move=False, rename_history=False, interactive=False):
         self.encode = encode
         self.dry_run = dry_run
@@ -357,7 +372,8 @@ Year:  {1:<27}Photographer: {3}
 
 processing={6}, dry-run={4}, encode-videos={5}, interactive={7},
 output="{8}"
-""".format(event or "", year or "", sub_event or "", photographer or "", self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder or "Input directories")
+""".format(event or "", year or "", sub_event or "", photographer or "", self.dry_run, self.encode,
+           mode_to_string(self.mode), self.interactive, output_folder or "Input directories")
         
         print(summary)
 
@@ -395,12 +411,13 @@ output="{8}"
                 except OSError as ex:
                     if ex.errno == errno.ENOTEMPTY:
                         print('Directory "{0}" not empty, cold not remove'.format(input_folder))
-                #shutil.rmtree(input_folder)
 
         print("\nAll done!")
 
+
 def main():
     arguments = docopt(__doc__, version=version)
+
     if not arguments['--output']:
         if len(arguments['--input']) > 1:
             print("Can not replace in place with more than one input directory")

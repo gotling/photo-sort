@@ -20,6 +20,7 @@ from docopt import docopt
 
 import photo_sort
 
+
 class PhotoSortApp:
     def __init__(self, parent, input_folders):
         self.photoSort = photo_sort.PhotoSort(False, False)
@@ -105,18 +106,21 @@ class PhotoSortApp:
         else:
             self.status_string.set("Please fill in required fields correctly.")
 
+
 def check_fields(year, event, photographer):
     return True
+
 
 def report_event(event):
     """Print a description of an event, based on its attributes.
     """
     event_name = {"2": "KeyPress", "4": "ButtonPress"}
     print("Time:", str(event.time))
-    print("EventType=" + str(event.type), \
-        event_name[str(event.type)],\
-        "EventWidgetId=" + str(event.widget), \
+    print("EventType=" + str(event.type),
+        event_name[str(event.type)],
+        "EventWidgetId=" + str(event.widget),
         "EventKeySymbol=" + str(event.keysym))
+
 
 def main():
     arguments = docopt(__doc__, version=photo_sort.version)

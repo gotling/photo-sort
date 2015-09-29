@@ -85,6 +85,7 @@ sentinel = b"{ready}"
 # some cases.
 block_size = 4096
 
+
 # This code has been adapted from Lib/os.py in the Python source tree
 # (sha1 265e36e277f3)
 def _fscodec():
@@ -113,6 +114,7 @@ def _fscodec():
 
 fsencode = _fscodec()
 del _fscodec
+
 
 class ExifTool(object):
     """Run the `exiftool` command-line tool and communicate to it.
