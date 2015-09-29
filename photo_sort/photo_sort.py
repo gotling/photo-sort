@@ -346,7 +346,7 @@ class PhotoSort():
 
     def process(self, input, output, year, event, sub_event, photographer):
         output_folder = folder_path(output, year, event, sub_event, photographer)
-        print """
+        print u"""
 Event: {0:<30}Sub event: {2}
 Year:  {1:<27}Photographer: {3}
 
