@@ -44,7 +44,7 @@ from datetime import datetime
 import exiftool
 from docopt import docopt
 
-ignored_extensions = ['.thm']
+ignored_extensions = ['.thm', '.db']
 video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt']
 handbrake_preset = 'Normal'
 version = 'Photo Sort 1.1.0.b1'
