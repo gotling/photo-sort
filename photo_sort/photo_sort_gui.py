@@ -10,10 +10,11 @@ Usage:
 import os
 from tkinter import *
 import tkinter.filedialog
+from tkinter.messagebox import askyesno
 
 from docopt import docopt
 
-from . import photo_sort
+import photo_sort_cli
 
 
 __author__ = "Marcus Götling"
@@ -23,7 +24,7 @@ __email__ = "marcus@gotling.se"
 
 class PhotoSortApp:
     def __init__(self, parent, input_folders):
-        self.photoSort = photo_sort.PhotoSort(False, False)
+        self.photoSort = photo_sort_cli.PhotoSort(False, False)
 
         self.app_parent = parent
         self.input_folders = input_folders
@@ -81,12 +82,22 @@ class PhotoSortApp:
         self.app_parent.destroy()
 
     def process_button_click(self, event):
+        self.confirm_rename_dialog()
+        return
         #report_event(event)
+
+    def confirm_rename_dialog(self):
+        if askyesno('Verify changes below', 'Files\tone\nMany files'):
+            self.rename()
+        else:
+            return
+
+    def rename(self):
         year = self.year_entry.get().strip()
         event = self.event_entry.get().strip()
         sub_event = self.sub_event_entry.get().strip()
         photographer = self.photographer_entry.get().strip()
-        
+
         if check_fields(year, event, photographer):
             if self.mode.get() == 2: # Replace
                 self.photoSort.set_mode(1) # Move
@@ -123,7 +134,7 @@ def report_event(event):
 
 
 def main():
-    arguments = docopt(__doc__, version=photo_sort.version)
+    arguments = docopt(__doc__, version=photo_sort_cli.version)
 
     root = Tk()
     root.wm_title("Photo Sort")

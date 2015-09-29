@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from glob import glob
 
-from . import exiftool
+import exiftool
 
 
 __author__ = 'marcus'

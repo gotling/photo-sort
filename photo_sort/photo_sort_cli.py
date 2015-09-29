@@ -37,8 +37,8 @@ from datetime import datetime
 
 from docopt import docopt
 
-from .video import encode_videos, get_metadata_file
-from . import exiftool
+from video import encode_videos, get_metadata_file
+import exiftool
 
 
 __author__ = "Marcus Götling"
