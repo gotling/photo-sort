@@ -245,7 +245,7 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
 def yes_no_dialog(prompt):
     yes = set(['yes','y', 'ye', 'j', ''])
 
-    choice = raw_input(prompt).lower()
+    choice = input(prompt).lower()
 
     if choice in yes:
         return True
@@ -259,8 +259,8 @@ def display_preview(rename_list):
     len_after = len(os.path.split(rename_list[0]["to"])[1])
 
     header_format = "{0:^" + str(len_before) + "}{1:^" + str(len_after) + "}"
-    print header_format.format("Before", "After")
-    print "-" * len_before + "\t" + "-" * len_after
+    print(header_format.format("Before", "After"))
+    print("-" * len_before + "\t" + "-" * len_after)
 
     for rename in rename_list:
         path, old_name = os.path.split(rename['from'])
@@ -272,14 +272,14 @@ def display_preview(rename_list):
         else:
             extension_count[extension] = 1
 
-        print old_name, "\t", new_name
+        print(old_name, "\t", new_name)
 
     extensions = []
 
     for extension in extension_count:
         extensions.append("%s=%d" % (extension, extension_count[extension]))
 
-    print "\nNumber of files:", ", ".join(extensions)
+    print("\nNumber of files:", ", ".join(extensions))
 
 class Mode:
     COPY = 0
@@ -314,16 +314,16 @@ class PhotoSort():
             shutil.move(rename["from"], rename["to"])
 
             path, file_name = os.path.split(rename["to"])
-            print file_name
+            print(file_name)
 
         if not self.dry_run:
-            print 'Moved %d files.' % len(rename_list)
+            print('Moved %d files.' % len(rename_list))
 
             if self.rename_history:
                 with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
                     json.dump(rename_list, rename_history)
         else:
-            print 'Would have moved %d files, if not dry run' % len(rename_list)
+            print('Would have moved %d files, if not dry run' % len(rename_list))
 
     def copy_files(self, rename_list):
         for rename in rename_list:
@@ -331,12 +331,12 @@ class PhotoSort():
                 shutil.copy2(rename["from"], rename["to"])
 
             path, file_name = os.path.split(rename["to"])
-            print file_name
+            print(file_name)
 
         if not self.dry_run:
-            print 'Copied %d files.' % len(rename_list)
+            print('Copied %d files.' % len(rename_list))
         else:
-            print 'Would have copied %d files, if not dry run' % len(rename_list)
+            print('Would have copied %d files, if not dry run' % len(rename_list))
 
     def process_files(self, rename_list):
         if self.mode == Mode.MOVE:
@@ -346,18 +346,18 @@ class PhotoSort():
 
     def process(self, input, output, year, event, sub_event, photographer):
         output_folder = folder_path(output, year, event, sub_event, photographer)
-        print u"""
+        print("""
 Event: {0:<30}Sub event: {2}
 Year:  {1:<27}Photographer: {3}
 
 processing={6}, dry-run={4}, encode-videos={5}, interactive={7},
 output="{8}"
-""".format(event, year, sub_event, photographer, self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder)
-        print "Building file list..\n"
+""".format(event, year, sub_event, photographer, self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder))
+        print("Building file list..\n")
         input_files = get_input_files(input)
 
         if len(input_files) == 0:
-            print 'No files to process.'
+            print('No files to process.')
             return
 
         if not self.dry_run:
@@ -368,7 +368,7 @@ output="{8}"
         if self.interactive:
             display_preview(rename_list)
             if not yes_no_dialog("\nContinue? [yes] "):
-                print 'Photo sort aborted.'
+                print('Photo sort aborted.')
                 return
 
         self.process_files(rename_list)
@@ -380,7 +380,7 @@ output="{8}"
             for input_folder in input:
                 shutil.rmtree(input_folder)
 
-        print "\nAll done!"
+        print("\nAll done!")
 
 def main():
     arguments = docopt(__doc__, version=version)

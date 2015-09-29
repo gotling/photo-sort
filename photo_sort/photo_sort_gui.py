@@ -13,8 +13,8 @@ __email__ = "marcus@gotling.se"
 
 import os
 import sys
-from Tkinter import *
-import tkFileDialog
+from tkinter import *
+import tkinter.filedialog
 
 from docopt import docopt
 
@@ -88,7 +88,7 @@ class PhotoSortApp:
         if check_fields(year, event, photographer):
             self.status_string.set("Choose output folder.")
             dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
-            output = tkFileDialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
+            output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
             if output != "":
                 self.status_string.set("Processing folders. Please wait...")
                 self.photoSort.set_mode(self.mode.get())
@@ -105,11 +105,11 @@ def report_event(event):
     """Print a description of an event, based on its attributes.
     """
     event_name = {"2": "KeyPress", "4": "ButtonPress"}
-    print "Time:", str(event.time)
-    print "EventType=" + str(event.type), \
+    print("Time:", str(event.time))
+    print("EventType=" + str(event.type), \
         event_name[str(event.type)],\
         "EventWidgetId=" + str(event.widget), \
-        "EventKeySymbol=" + str(event.keysym)
+        "EventKeySymbol=" + str(event.keysym))
 
 def main():
     arguments = docopt(__doc__, version=photo_sort.version)
