@@ -51,9 +51,10 @@ class PhotoSortApp:
         self.photographer_entry.grid(row=4, column=1, sticky=W)
 
         self.mode = IntVar()
-        self.mode.set(0)
-        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=5, sticky=W)
-        Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=5, column=1, sticky=W)
+        self.mode.set(2)
+        Radiobutton(self.container, text='Rename', variable=self.mode, value=2).grid(row=5, sticky=W)
+        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=5, column=1, sticky=W)
+        Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=5, column=2, sticky=W)
 
         self.encode = BooleanVar()
         self.encode.set(True)
@@ -86,15 +87,21 @@ class PhotoSortApp:
         photographer = self.photographer_entry.get().strip()
         
         if check_fields(year, event, photographer):
-            self.status_string.set("Choose output folder.")
-            dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
-            output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
-            if output != "":
-                self.status_string.set("Processing folders. Please wait...")
+            if self.mode.get() == 2: # Replace
+                self.photoSort.set_mode(1) # Move
+                output = None
+            else:
+                self.status_string.set("Choose output folder.")
+                dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
+                output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
+                if output == "":
+                    return
                 self.photoSort.set_mode(self.mode.get())
-                self.photoSort.set_encode_videos(self.encode.get())
-                self.photoSort.process(self.input_folders, output, year, event, sub_event, photographer)
-                self.status_string.set("Done!")
+
+            self.status_string.set("Processing folders. Please wait...")
+            self.photoSort.set_encode_videos(self.encode.get())
+            self.photoSort.process(self.input_folders, output, year, event, sub_event, photographer)
+            self.status_string.set("Done!")
         else:
             self.status_string.set("Please fill in required fields correctly.")
 

@@ -4,11 +4,12 @@
 """Photo Sort
 
 Usage:
-    photo-sort.py -i <input> ... -o <output> [-y <year>] [-e <event>] [-s <sub-event>] [-p <photographer>] [options]
+    photo-sort.py -i <input> ... [-o <output>] [-y <year>] [-e <event>] [-s <sub-event>] [-p <photographer>] [options]
 
 Options:
     -i --input <input>...             Folder(s) with photos to process
-    -o --output <output>              Where to create new folder
+    -o --output <output>              Optional: If omitted, rename files in input folder.
+                                        Othervise folder where to create new output folder.
     -y --year <year>                  Optional: Year the photos were taken
     -e --event <event>                Optional: Name of the event
     -s --sub-event <sub-event>        Optional: Name of part of the event
@@ -178,9 +179,7 @@ def get_metadata_file(file):
             if os.path.isfile(meta_file):
                 return meta_file
 
-        return file
-    else:
-        return file
+    return file
 
 def get_time_taken(file, et):
     """Return date time when photo or video was most likely taken"""
@@ -233,6 +232,8 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
     for index, key in enumerate(sorted(input_files)):
         input_file = input_files[key]
         output_file_name = get_output_file_name(year, event, sub_event, photographer, index_mask, index, input_file)
+        if not output_folder:
+            output_folder = os.path.dirname(input_file)
         output_file = os.path.join(output_folder, output_file_name)
 
         rename = {}
@@ -317,13 +318,13 @@ class PhotoSort():
             print(file_name)
 
         if not self.dry_run:
-            print('Moved %d files.' % len(rename_list))
+            print('Moved/renamed %d files.' % len(rename_list))
 
             if self.rename_history:
                 with open(os.path.join(path, 'rename_history.json'), 'w') as rename_history:
                     json.dump(rename_list, rename_history)
         else:
-            print('Would have moved %d files, if not dry run' % len(rename_list))
+            print('Would have moved/renamed %d files, if not dry run' % len(rename_list))
 
     def copy_files(self, rename_list):
         for rename in rename_list:
@@ -345,14 +346,21 @@ class PhotoSort():
             self.copy_files(rename_list)
 
     def process(self, input, output, year, event, sub_event, photographer):
-        output_folder = folder_path(output, year, event, sub_event, photographer)
-        print("""
+        if output:
+            output_folder = folder_path(output, year, event, sub_event, photographer)
+        else:
+            output_folder = None
+
+        summary = """
 Event: {0:<30}Sub event: {2}
 Year:  {1:<27}Photographer: {3}
 
 processing={6}, dry-run={4}, encode-videos={5}, interactive={7},
 output="{8}"
-""".format(event, year, sub_event, photographer, self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder))
+""".format(event or "", year or "", sub_event or "", photographer or "", self.dry_run, self.encode, mode_to_string(self.mode), self.interactive, output_folder or "Input directories")
+        
+        print(summary)
+
         print("Building file list..\n")
         input_files = get_input_files(input)
 
@@ -360,7 +368,7 @@ output="{8}"
             print('No files to process.')
             return
 
-        if not self.dry_run:
+        if not self.dry_run and output:
             mkdir(output_folder)
         
         rename_list = get_rename_list(year, event, sub_event, photographer, input_files, output_folder)
@@ -374,16 +382,30 @@ output="{8}"
         self.process_files(rename_list)
 
         if self.encode and not self.dry_run:
-            encode_videos(output_folder)
+            if output:
+                encode_videos(output_folder)
+            else:
+                for input_folder in input:
+                    encode_videos(input_folder)
 
-        if self.mode == Mode.MOVE:
+        if self.mode == Mode.MOVE and output:
             for input_folder in input:
-                shutil.rmtree(input_folder)
+                try:
+                    os.rmdir(input_folder)
+                except OSError as ex:
+                    if ex.errno == errno.ENOTEMPTY:
+                        print('Directory "{0}" not empty, cold not remove'.format(input_folder))
+                #shutil.rmtree(input_folder)
 
         print("\nAll done!")
 
 def main():
     arguments = docopt(__doc__, version=version)
+    if not arguments['--output']:
+        if len(arguments['--input']) > 1:
+            print("Can not replace in place with more than one input directory")
+            return
+        arguments['--move'] = True
 
     photoSort = PhotoSort(encode=not arguments['--skip-encode'], dry_run=arguments['--dry-run'], move=arguments['--move'], rename_history=arguments['--rename-history'], interactive=True)
 
