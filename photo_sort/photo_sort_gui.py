@@ -9,6 +9,7 @@ Usage:
 
 import os
 from tkinter import *
+import tkinter as tk
 import tkinter.filedialog
 from tkinter.messagebox import askyesno
 
@@ -28,51 +29,58 @@ class PhotoSortApp:
         self.container = Frame(parent)
         self.container.grid(padx=10, pady=10)
 
+        Label(self.container, text="Folders:", anchor=W).grid(row=0, sticky=W)
         input_text = "\n".join(input_folders)
         self.input_label = Label(self.container, text=input_text, justify=LEFT, anchor=W)
-        self.input_label.grid(columnspan=2, sticky=W)
+        self.input_label.grid(row=0, column=1, columnspan=3, sticky=W)
 
-        Label(self.container, text="Year:", anchor=W).grid(row=1, sticky=W)
-        self.year_entry = Entry(self.container)
-        self.year_entry.grid(row=1, column=1, sticky=W)
-        self.year_entry.focus()
-
-        Label(self.container, text="Event:", anchor=W).grid(row=2, sticky=W)
+        Label(self.container, text="Name:", anchor=W).grid(row=1, sticky=W)
         self.event_entry = Entry(self.container)
-        self.event_entry.grid(row=2, column=1, sticky=W)
+        self.event_entry.grid(row=1, column=1, sticky=W)
+        self.event_entry.focus()
 
-        Label(self.container, text="Sub Event:", anchor=W).grid(row=3, sticky=W)
+        Label(self.container, text="Year:", anchor=W).grid(row=1, column=3, sticky=W)
+        self.year_entry = Entry(self.container)
+        self.year_entry.grid(row=1, column=4, sticky=W)
+
+        Label(self.container, text="Sub Name:", anchor=W).grid(row=2, sticky=W)
         self.sub_event_entry = Entry(self.container)
-        self.sub_event_entry.grid(row=3, column=1, sticky=W)
+        self.sub_event_entry.grid(row=2, column=1, sticky=W)
 
-        Label(self.container, text="Photographer:", anchor=W).grid(row=4, sticky=W)
+        Label(self.container, text="Photographer:", anchor=W).grid(row=2, column=3, sticky=W)
         self.photographer_entry = Entry(self.container)
-        self.photographer_entry.grid(row=4, column=1, sticky=W)
+        self.photographer_entry.grid(row=2, column=4, sticky=W)
 
         self.mode = IntVar()
-        self.mode.set(Mode.copy)
-        Radiobutton(self.container, text='Rename', variable=self.mode, value=Mode.replace).grid(row=5, sticky=W)
-        Radiobutton(self.container, text='Copy', variable=self.mode, value=Mode.copy).grid(row=5, column=1, sticky=W)
-        Radiobutton(self.container, text='Move', variable=self.mode, value=Mode.move).grid(row=5, column=2, sticky=W)
+        self.mode.set(Mode.replace.value)
+        Radiobutton(self.container, text='Rename', variable=self.mode, value=Mode.replace.value).grid(row=3, sticky=W)
+        Radiobutton(self.container, text='Copy', variable=self.mode, value=Mode.copy.value).grid(row=3, column=1, sticky=W)
+        Radiobutton(self.container, text='Move', variable=self.mode, value=Mode.move.value).grid(row=3, column=2, columnspan=3, sticky=W)
 
         self.encode = BooleanVar()
         self.encode.set(True)
-        Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=6, columnspan=2, sticky=W)
+        Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=4, sticky=W)
 
         self.process_button = Button(self.container)
         self.process_button["text"] = "Process"
-        self.process_button.grid(row=7, sticky=W)
+        self.process_button.grid(row=5, sticky=W)
         self.process_button.bind("<Button-1>", self.process_button_click)
 
-        self.cancel_button = Button(self.container)
-        self.cancel_button["text"] = "Cancel"
-        self.cancel_button.grid(row=7, column=1, sticky=E)
-        self.cancel_button.bind("<Button-1>", self.cancel_button_click)
+        bottom_panel = Frame(self.container, borderwidth=1, relief="sunken")
+        bottom_panel.grid(row=8, columnspan=5)
+        self.console_string = "Fill in fields and press Process to start\n"
 
-        self.status_string = StringVar()
-        self.status_string.set("Fill in fields and press Process to start")
-        self.status_label = Label(self.container, textvariable=self.status_string, justify=LEFT, anchor=W)
-        self.status_label.grid(row=8, columnspan=2, sticky=W)
+        scrollbar = tk.Scrollbar(orient="vertical", borderwidth=1)
+        # N.B. height is irrelevant; it will be as high as it needs to be
+        self.console_text = tk.Text(background="white", width=80, height=8, borderwidth=0, yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.console_text.yview)
+
+        self.console_text.grid(in_=bottom_panel, row=0, column=0, columnspan=3, sticky="nsew")
+        scrollbar.grid(in_=bottom_panel, row=0, column=3, sticky="ns")
+        bottom_panel.grid_rowconfigure(1, weight=1)
+        bottom_panel.grid_columnconfigure(0, weight=1)
+
+        self.console_text.insert(END, self.console_string)
 
     def cancel_button_click(self, event):
         report_event(event)
@@ -88,18 +96,18 @@ class PhotoSortApp:
         sub_event = self.sub_event_entry.get().strip()
         photographer = self.photographer_entry.get().strip()
 
-        if self.mode.get() == Mode.replace:
+        if Mode(self.mode.get()) == Mode.replace:
             mode = Mode.move
             output = None
         else:
-            self.status_string.set("Choose output folder.")
+            self.log("Choose output folder.")
             dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
             output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
             if output == "":
                 return
             mode = self.mode.get()
 
-        self.status_string.set("Processing folders. Please wait...")
+        self.log("Processing folders. Please wait...")
         self.photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer, encode=False, dry_run=False)
         self.photoSort.set_mode(mode)
         self.photoSort.set_encode_videos(self.encode.get())
@@ -110,12 +118,16 @@ class PhotoSortApp:
         if askyesno('Verify changes below', self.photoSort.get_preview() + "\n\nContinue?"):
             self.rename()
         else:
+            self.log("Canceled")
             return
 
     def rename(self):
         self.photoSort.process()
-        self.status_string.set("Done!")
+        self.log("Done!")
 
+    def log(self, string):
+        self.console_text.insert(END, string + "\n")
+        self.console_text.see(END)
 
 def report_event(event):
     """Print a description of an event, based on its attributes.

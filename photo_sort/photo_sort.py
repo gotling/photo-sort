@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+from enums import Mode
 
 from exceptions import NoFileException, FolderNotEmptyException
 import exiftool
@@ -173,18 +174,6 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
     return rename_list
 
 
-class Mode:
-    COPY = 0
-    MOVE = 1
-
-
-def mode_to_string(mode):
-    if mode == Mode.COPY:
-        return "copy"
-    else:
-        return "move"
-
-
 class PhotoSort:
     def __init__(self, input, output, year, event, sub_event, photographer, encode, dry_run, move=False, rename_history=False):
         self.encode = encode
@@ -198,7 +187,7 @@ class PhotoSort:
         self.photographer = photographer
 
         self.output_folder = folder_path(self.output, self.year, self.event, self.sub_event, self.photographer) if self.output else None
-        self.mode = Mode.MOVE if move else Mode.COPY
+        self.mode = Mode.move if move else Mode.copy
 
         input_files = get_input_files(input)
         if not len(input_files):
@@ -242,7 +231,7 @@ class PhotoSort:
             print('Would have copied %d files, if not dry run' % len(rename_list))
 
     def process_files(self, rename_list):
-        if self.mode == Mode.MOVE:
+        if self.mode == Mode.move:
             self.move_files(rename_list)
         else:
             self.copy_files(rename_list)
@@ -255,7 +244,7 @@ Year:  {1:<27}Photographer: {3}
 processing={6}, dry-run={4}, encode-videos={5},
 output="{7}"
 """.format(self.event or "", self.year or "", self.sub_event or "", self.photographer or "", self.dry_run, self.encode,
-           mode_to_string(self.mode), self.output_folder or "Input directories")
+           self.mode.name, self.output_folder or "Input directories")
 
     def get_preview(self):
         text = ""
@@ -302,7 +291,7 @@ output="{7}"
                 for input_folder in self.input:
                     encode_videos(input_folder)
 
-        if self.mode == Mode.MOVE and self.output:
+        if self.mode == Mode.move and self.output:
             for input_folder in self.input:
                 try:
                     os.rmdir(input_folder)
