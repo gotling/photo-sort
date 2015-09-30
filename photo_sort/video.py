@@ -8,7 +8,7 @@ import exiftool
 __author__ = 'marcus'
 
 
-video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt', '.wmv']
+video_extensions = ['.avi', '.dv', '.mpg', '.mpeg', '.ogm', '.m4v', '.mp4', '.mkv', '.mov', '.qt', '.wmv', '.3gp', '.mod']
 handbrake_preset = 'Normal'
 
 

@@ -101,7 +101,7 @@ def get_metadata_file(file):
     """MPEG videos sometimes store EXIF data in a separate .thm file"""
     (base, extension) = os.path.splitext(file)
 
-    if extension.lower() in ['.mpg', '.mpeg']:
+    if extension.lower() in ['.mpg', '.mpeg', '.avi']:
         for meta_extension in ['.thm', '.THM']:
             meta_file = base + meta_extension
 
