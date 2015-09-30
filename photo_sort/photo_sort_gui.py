@@ -14,6 +14,7 @@ from tkinter.messagebox import askyesno
 
 from docopt import docopt
 import photo_sort
+from enums import Mode
 
 __author__ = "Marcus Götling"
 __license__ = "MIT"
@@ -49,10 +50,10 @@ class PhotoSortApp:
         self.photographer_entry.grid(row=4, column=1, sticky=W)
 
         self.mode = IntVar()
-        self.mode.set(2)
-        Radiobutton(self.container, text='Rename', variable=self.mode, value=2).grid(row=5, sticky=W)
-        Radiobutton(self.container, text='Copy', variable=self.mode, value=0).grid(row=5, column=1, sticky=W)
-        Radiobutton(self.container, text='Move', variable=self.mode, value=1).grid(row=5, column=2, sticky=W)
+        self.mode.set(Mode.copy)
+        Radiobutton(self.container, text='Rename', variable=self.mode, value=Mode.replace).grid(row=5, sticky=W)
+        Radiobutton(self.container, text='Copy', variable=self.mode, value=Mode.copy).grid(row=5, column=1, sticky=W)
+        Radiobutton(self.container, text='Move', variable=self.mode, value=Mode.move).grid(row=5, column=2, sticky=W)
 
         self.encode = BooleanVar()
         self.encode.set(True)
@@ -74,51 +75,46 @@ class PhotoSortApp:
         self.status_label.grid(row=8, columnspan=2, sticky=W)
 
     def cancel_button_click(self, event):
-        #report_event(event)
+        report_event(event)
         self.app_parent.destroy()
 
     def process_button_click(self, event):
-        self.confirm_rename_dialog()
-        return
-        #report_event(event)
+        report_event(event)
+        self.prepare()
 
-    def confirm_rename_dialog(self):
-        if askyesno('Verify changes below', 'Files\tone\nMany files'):
-            self.rename()
-        else:
-            return
-
-    def rename(self):
+    def prepare(self):
         year = self.year_entry.get().strip()
         event = self.event_entry.get().strip()
         sub_event = self.sub_event_entry.get().strip()
         photographer = self.photographer_entry.get().strip()
 
-        if check_fields(year, event, photographer):
-            if self.mode.get() == 2:  # Replace
-                mode = 1  # Move # TODO: Replace with Enum
-                output = None
-            else:
-                self.status_string.set("Choose output folder.")
-                dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
-                output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
-                if output == "":
-                    return
-                mode = self.mode.get()
-
-            self.status_string.set("Processing folders. Please wait...")
-            photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer, encode=False, dry_run=False)
-            photoSort.set_mode(mode)
-            photoSort.set_encode_videos(self.encode.get())
-            photoSort.process()
-
-            self.status_string.set("Done!")
+        if self.mode.get() == Mode.replace:
+            mode = Mode.move
+            output = None
         else:
-            self.status_string.set("Please fill in required fields correctly.")
+            self.status_string.set("Choose output folder.")
+            dialog_dir = os.path.abspath(os.path.join(self.input_folders[0], os.pardir))
+            output = tkinter.filedialog.askdirectory(title="Choose output folder", initialdir=dialog_dir, mustexist=True)
+            if output == "":
+                return
+            mode = self.mode.get()
 
+        self.status_string.set("Processing folders. Please wait...")
+        self.photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer, encode=False, dry_run=False)
+        self.photoSort.set_mode(mode)
+        self.photoSort.set_encode_videos(self.encode.get())
 
-def check_fields(year, event, photographer):
-    return True
+        self.confirm_rename_dialog()
+
+    def confirm_rename_dialog(self):
+        if askyesno('Verify changes below', self.photoSort.get_preview() + "\n\nContinue?"):
+            self.rename()
+        else:
+            return
+
+    def rename(self):
+        self.photoSort.process()
+        self.status_string.set("Done!")
 
 
 def report_event(event):
@@ -127,9 +123,9 @@ def report_event(event):
     event_name = {"2": "KeyPress", "4": "ButtonPress"}
     print("Time:", str(event.time))
     print("EventType=" + str(event.type),
-        event_name[str(event.type)],
-        "EventWidgetId=" + str(event.widget),
-        "EventKeySymbol=" + str(event.keysym))
+          event_name[str(event.type)],
+          "EventWidgetId=" + str(event.widget),
+          "EventKeySymbol=" + str(event.keysym))
 
 
 def main():
@@ -138,7 +134,7 @@ def main():
     root = Tk()
     root.wm_title("Photo Sort")
     root.resizable(width=FALSE, height=FALSE)
-    app = PhotoSortApp(root, arguments['<input>'])
+    PhotoSortApp(root, arguments['<input>'])
     root.mainloop()
 
 if __name__ == '__main__':
