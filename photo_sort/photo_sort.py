@@ -245,7 +245,7 @@ Year:  {1:<27}Photographer: {3}
 processing={6}, dry-run={4}, encode-videos={5},
 output="{7}"
 """.format(self.event or "", self.year or "", self.sub_event or "", self.photographer or "", self.dry_run, self.encode,
-           self.mode.name, self.output_folder or "Input directories")
+           self.mode, self.output_folder or "Input directories")
 
     def get_preview(self):
         text = ""
