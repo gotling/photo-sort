@@ -39,17 +39,17 @@ class PhotoSortApp:
         self.event_entry.grid(row=1, column=1, sticky=W)
         self.event_entry.focus()
 
-        Label(self.container, text="Year:", anchor=W).grid(row=1, column=3, sticky=W)
+        Label(self.container, text="Year:", anchor=W).grid(row=1, column=2, sticky=W)
         self.year_entry = Entry(self.container)
-        self.year_entry.grid(row=1, column=4, sticky=W)
+        self.year_entry.grid(row=1, column=3, sticky=W)
 
         Label(self.container, text="Sub Name:", anchor=W).grid(row=2, sticky=W)
         self.sub_event_entry = Entry(self.container)
         self.sub_event_entry.grid(row=2, column=1, sticky=W)
 
-        Label(self.container, text="Photographer:", anchor=W).grid(row=2, column=3, sticky=W)
+        Label(self.container, text="Photographer:", anchor=W).grid(row=2, column=2, sticky=W)
         self.photographer_entry = Entry(self.container)
-        self.photographer_entry.grid(row=2, column=4, sticky=W)
+        self.photographer_entry.grid(row=2, column=3, sticky=W)
 
         self.mode = IntVar()
         self.mode.set(Mode.replace.value)
