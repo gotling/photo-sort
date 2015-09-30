@@ -175,7 +175,7 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
 
 
 class PhotoSort:
-    def __init__(self, input, output, year, event, sub_event, photographer, encode, dry_run, move=False, rename_history=False):
+    def __init__(self, input, output, year, event, sub_event, photographer, encode, dry_run, move=False, rename_history=False, decomb=False):
         self.encode = encode
         self.dry_run = dry_run
         self.rename_history = rename_history
@@ -185,6 +185,7 @@ class PhotoSort:
         self.event = event
         self.sub_event = sub_event
         self.photographer = photographer
+        self.decomb = decomb
 
         self.output_folder = folder_path(self.output, self.year, self.event, self.sub_event, self.photographer) if self.output else None
         self.mode = Mode.move if move else Mode.copy
@@ -289,7 +290,7 @@ output="{7}"
                 encode_videos(self.output_folder)
             else:
                 for input_folder in self.input:
-                    encode_videos(input_folder)
+                    encode_videos(input_folder, self.decomb)
 
         if self.mode == Mode.move and self.output:
             for input_folder in self.input:

@@ -27,7 +27,7 @@ def get_video_rotation(et, file):
         return None
 
 
-def encode_videos(output_folder):
+def encode_videos(output_folder, decomb=False):
     """Encode videos using HandBrakeCLI"""
     files = glob(os.path.join(output_folder, '*.*'))
 
@@ -42,11 +42,14 @@ def encode_videos(output_folder):
                     shutil.move(input_file, input_file + '_')
                     input_file += '_'
 
-                command = ["HandBrakeCLI", "--preset", handbrake_preset, "-i" ,input_file, "-o", output_file]
+                command = ["HandBrakeCLI", "--preset", handbrake_preset, "-i", input_file, "-o", output_file]
 
                 rotation = get_video_rotation(et, input_file)
                 if rotation:
                     command.append("--rotate=" + str(rotation))
+
+                if decomb:
+                    command.append("--decomb")
 
                 subprocess.call(command)
 

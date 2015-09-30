@@ -61,6 +61,10 @@ class PhotoSortApp:
         self.encode.set(True)
         Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=4, sticky=W)
 
+        self.decomb = BooleanVar()
+        self.decomb.set(False)
+        Checkbutton(self.container, text="Decomb to remove horizontal lines", variable=self.decomb).grid(row=4, column=2, columnspan=2, sticky=W)
+
         self.process_button = Button(self.container)
         self.process_button["text"] = "Process"
         self.process_button.grid(row=5, sticky=W)
@@ -108,7 +112,8 @@ class PhotoSortApp:
             mode = self.mode.get()
 
         self.log("Processing folders. Please wait...")
-        self.photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer, encode=False, dry_run=False)
+        self.photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer,
+                                              encode=False, dry_run=False, decomb=self.decomb)
         self.photoSort.set_mode(mode)
         self.photoSort.set_encode_videos(self.encode.get())
 
@@ -128,6 +133,7 @@ class PhotoSortApp:
     def log(self, string):
         self.console_text.insert(END, string + "\n")
         self.console_text.see(END)
+
 
 def report_event(event):
     """Print a description of an event, based on its attributes.

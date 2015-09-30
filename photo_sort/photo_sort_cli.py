@@ -18,6 +18,7 @@ Options:
     --dry-run                         Make no changes
     --move                            Move files instead of copy
     --rename-history                  Write names before and after move to a file in output directory
+    --decomb                          [Video] Enable decombing during encode to remove interlacing
 
 Example:
     photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
@@ -61,7 +62,8 @@ def main():
                            year=arguments['--year'], event=arguments['--event'],
                            sub_event=arguments['--sub-event'], photographer=arguments['--photographer'],
                            encode=not arguments['--skip-encode'], dry_run=arguments['--dry-run'],
-                           move=arguments['--move'], rename_history=arguments['--rename-history'])
+                           move=arguments['--move'], rename_history=arguments['--rename-history'],
+                           decomb=arguments['--decomb'])
     except NoFileException:
         print('No files to process.')
         return
