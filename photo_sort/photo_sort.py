@@ -9,7 +9,7 @@ import shutil
 
 from exceptions import NoFileException, FolderNotEmptyException
 import exiftool
-from video import get_metadata_file, encode_videos
+from video import encode_videos
 
 __author__ = 'marcus'
 
@@ -94,6 +94,20 @@ def get_output_file_name(year, event, sub_event, photographer, index_mask, index
     output_file_name += extension.lower()
 
     return output_file_name
+
+
+def get_metadata_file(file):
+    """MPEG videos sometimes store EXIF data in a separate .thm file"""
+    (base, extension) = os.path.splitext(file)
+
+    if extension.lower() in ['.mpg', '.mpeg']:
+        for meta_extension in ['.thm', '.THM']:
+            meta_file = base + meta_extension
+
+            if os.path.isfile(meta_file):
+                return meta_file
+
+    return file
 
 
 def get_time_taken(file, et):

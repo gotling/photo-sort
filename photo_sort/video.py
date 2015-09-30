@@ -5,7 +5,6 @@ from glob import glob
 
 import exiftool
 
-
 __author__ = 'marcus'
 
 
@@ -58,16 +57,3 @@ def encode_videos(output_folder):
 
                 os.remove(input_file)
 
-
-def get_metadata_file(file):
-    """MPEG videos sometimes store EXIF data in a sepparate .thm file"""
-    (base, extension)=os.path.splitext(file)
-
-    if extension.lower() in ['.mpg', '.mpeg']:
-        for meta_extension in ['.thm', '.THM']:
-            meta_file = base + meta_extension
-
-            if os.path.isfile(meta_file):
-                return meta_file
-
-    return file
