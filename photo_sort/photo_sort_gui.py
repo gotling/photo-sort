@@ -15,7 +15,7 @@ from tkinter.messagebox import askyesno
 
 from docopt import docopt
 import photo_sort
-from enums import Mode
+from enums import Mode, Encode
 
 __author__ = "Marcus Götling"
 __license__ = "MIT"
@@ -59,11 +59,28 @@ class PhotoSortApp:
 
         self.encode = BooleanVar()
         self.encode.set(True)
-        Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=4, sticky=W)
+        #Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=4, sticky=W)
+
+
+        Label(self.container, text="Encode videos:").grid(row=4, column=0)
+
+        self.var = StringVar(self.container)
+
+        # Use dictionary to map names to ages.
+        self.choices = {
+            'No': Encode.no,
+            'Yes': Encode.yes,
+            'Later': Encode.later,
+        }
+
+        option = OptionMenu(self.container, self.var, *self.choices)
+        self.var.set('Yes')
+
+        option.grid(row=4, column=1)
 
         self.decomb = BooleanVar()
         self.decomb.set(False)
-        Checkbutton(self.container, text="Decomb to remove horizontal lines", variable=self.decomb).grid(row=4, column=2, columnspan=2, sticky=W)
+        Checkbutton(self.container, text="Decomb to remove horizontal lines", variable=self.decomb).grid(row=4, column=2, columnspan=1, sticky=W)
 
         self.process_button = Button(self.container)
         self.process_button["text"] = "Process"
@@ -99,6 +116,7 @@ class PhotoSortApp:
         event = self.event_entry.get().strip()
         sub_event = self.sub_event_entry.get().strip()
         photographer = self.photographer_entry.get().strip()
+        encode = self.choices[self.var.get()].name
 
         if Mode(self.mode.get()) == Mode.replace:
             mode = Mode.move
@@ -113,14 +131,14 @@ class PhotoSortApp:
 
         self.log("Processing folders. Please wait...")
         self.photoSort = photo_sort.PhotoSort(self.input_folders, output, year, event, sub_event, photographer,
-                                              encode=False, dry_run=False, decomb=self.decomb)
+                                              encode=encode, dry_run=False, decomb=self.decomb.get())
         self.photoSort.set_mode(mode)
-        self.photoSort.set_encode_videos(self.encode.get())
+        #self.photoSort.set_encode_videos(self.encode.get())
 
         self.confirm_rename_dialog()
 
     def confirm_rename_dialog(self):
-        if askyesno('Verify changes below', self.photoSort.get_preview() + "\n\nContinue?"):
+        if askyesno('Verify changes below', self.photoSort.get_summary() + "\n" + self.photoSort.get_preview() + "\n\nContinue?"):
             self.rename()
         else:
             self.log("Canceled")

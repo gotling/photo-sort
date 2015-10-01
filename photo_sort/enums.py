@@ -8,3 +8,12 @@ class Mode(Enum):
 
     def __str__(self):
         return self.name
+
+
+class Encode(Enum):
+    no = 0
+    yes = 1
+    later = 2
+
+    def __str__(self):
+        return self.name

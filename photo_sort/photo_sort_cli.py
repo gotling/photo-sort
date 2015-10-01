@@ -14,14 +14,15 @@ Options:
     -e --event <event>                Optional: Name of the event
     -s --sub-event <sub-event>        Optional: Name of part of the event
     -p --photographer <photographer>  Optional: Name of person taking the photos
-    --skip-encode                     Do not encode videos
     --dry-run                         Make no changes
     --move                            Move files instead of copy
     --rename-history                  Write names before and after move to a file in output directory
-    --decomb                          [Video] Enable decombing during encode to remove interlacing
+    --encode (no|yes|later)           Video: If and when videos should be encoded [default: yes]
+    --decomb                          Video: Enable decombing during encode to remove interlacing
+    
 
 Example:
-    photo-sort.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
+    photo_sort_cli.py -i "Canon" -i "Samsung" -o "My Photos" -y 2014 -e Boom -p Marcus
 
 More info:
     Encoding of videos requires HandBrakeCLI and ExifTool to be on the system path.
@@ -61,7 +62,7 @@ def main():
         sorter = PhotoSort(input=arguments['--input'], output=arguments['--output'],
                            year=arguments['--year'], event=arguments['--event'],
                            sub_event=arguments['--sub-event'], photographer=arguments['--photographer'],
-                           encode=not arguments['--skip-encode'], dry_run=arguments['--dry-run'],
+                           encode=arguments['--encode'], dry_run=arguments['--dry-run'],
                            move=arguments['--move'], rename_history=arguments['--rename-history'],
                            decomb=arguments['--decomb'])
     except NoFileException:

@@ -6,11 +6,11 @@ import json
 import os
 import re
 import shutil
-from enums import Mode
+from enums import Mode, Encode
 
 from exceptions import NoFileException, FolderNotEmptyException
 import exiftool
-from video import encode_videos
+from video import encode_videos, write_batch_list_windows
 
 __author__ = 'marcus'
 
@@ -175,8 +175,8 @@ def get_rename_list(year, event, sub_event, photographer, input_files, output_fo
 
 
 class PhotoSort:
-    def __init__(self, input, output, year, event, sub_event, photographer, encode, dry_run, move=False, rename_history=False, decomb=False):
-        self.encode = encode
+    def __init__(self, input, output, year, event, sub_event, photographer, dry_run, encode=Encode.yes, move=False, rename_history=False, decomb=False):
+        self.encode = Encode[encode]
         self.dry_run = dry_run
         self.rename_history = rename_history
         self.input = input
@@ -242,10 +242,10 @@ class PhotoSort:
 Event: {0:<30}Sub event: {2}
 Year:  {1:<27}Photographer: {3}
 
-processing={6}, dry-run={4}, encode-videos={5},
+processing={6}, dry-run={4}, encode-videos={5}, decomb={8},
 output="{7}"
 """.format(self.event or "", self.year or "", self.sub_event or "", self.photographer or "", self.dry_run, self.encode,
-           self.mode, self.output_folder or "Input directories")
+           self.mode, self.output_folder or "Input directories", self.decomb)
 
     def get_preview(self):
         text = ""
@@ -285,12 +285,20 @@ output="{7}"
 
         self.process_files(self.rename_list)
 
-        if self.encode and not self.dry_run:
-            if self.output:
-                encode_videos(self.output_folder)
-            else:
-                for input_folder in self.input:
-                    encode_videos(input_folder, self.decomb)
+        # TODO: Fix nesting
+        if not self.dry_run:
+            if self.encode == Encode.yes:
+                if self.output:
+                    encode_videos(self.output_folder, self.decomb)
+                else:
+                    for input_folder in self.input:
+                        encode_videos(input_folder, self.decomb)
+            elif self.encode == Encode.later:
+                if self.output:
+                    write_batch_list_windows(self.output_folder, self.decomb)
+                else:
+                    for input_folder in self.input:
+                        write_batch_list_windows(input_folder, self.decomb)
 
         if self.mode == Mode.move and self.output:
             for input_folder in self.input:
