@@ -61,7 +61,6 @@ class PhotoSortApp:
         self.encode.set(True)
         #Checkbutton(self.container, text="Encode videos", variable=self.encode).grid(row=4, sticky=W)
 
-
         Label(self.container, text="Encode videos:").grid(row=4, column=0)
 
         self.var = StringVar(self.container)
@@ -76,15 +75,15 @@ class PhotoSortApp:
         option = OptionMenu(self.container, self.var, *self.choices)
         self.var.set('Yes')
 
-        option.grid(row=4, column=1)
+        option.grid(row=4, column=1, sticky="ew")
 
         self.decomb = BooleanVar()
         self.decomb.set(False)
-        Checkbutton(self.container, text="Decomb to remove horizontal lines", variable=self.decomb).grid(row=4, column=2, columnspan=1, sticky=W)
+        Checkbutton(self.container, text="Decomb to remove horizontal lines", variable=self.decomb).grid(row=4, column=2, columnspan=2, sticky=W)
 
-        self.process_button = Button(self.container)
+        self.process_button = Button(self.container, anchor=E, height="2", default="active")
         self.process_button["text"] = "Process"
-        self.process_button.grid(row=5, sticky=W)
+        self.process_button.grid(row=5, column=3, sticky="ew")
         self.process_button.bind("<Button-1>", self.process_button_click)
 
         bottom_panel = Frame(self.container, borderwidth=1, relief="sunken")
@@ -170,8 +169,10 @@ def main():
     root = Tk()
     root.wm_title("Photo Sort")
     root.resizable(width=FALSE, height=FALSE)
-    PhotoSortApp(root, arguments['<input>'])
+    photo_sort_app = PhotoSortApp(root, arguments['<input>'])
+    root.bind('<Return>', photo_sort_app.process_button_click)
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
