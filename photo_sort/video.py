@@ -102,10 +102,13 @@ def write_batch_list_windows(output_folder, decomb=False):
 
                     rotation = get_rotation(et, input_file)
 
+                    input_file = os.path.basename(input_file)
+
                     if os.path.exists(output_file):
                         content.append("move %s %s_ %s\n" % (input_file, input_file, error))
                         input_file += '_'
 
+                    output_file = os.path.basename(base) + '.mp4'
                     command = get_encode_command(input_file, output_file, rotation, decomb)
                     content.append(" ".join(command) + error + "\n")
 
